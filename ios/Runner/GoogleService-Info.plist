@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCoYYGDkCkIgQFNVim_VJdD-_3xzsxMymE</string>
+	<key>GCM_SENDER_ID</key>
+	<string>726241518686</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.tutor.connect.tutorConnectApp</string>
+	<key>PROJECT_ID</key>
+	<string>tutor-connect-6417a</string>
+	<key>STORAGE_BUCKET</key>
+	<string>tutor-connect-6417a.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:726241518686:ios:f114b8d9fd14d0111280cf</string>
+</dict>
+</plist>

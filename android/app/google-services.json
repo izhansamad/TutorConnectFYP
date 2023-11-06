@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "726241518686",
+    "project_id": "tutor-connect-6417a",
+    "storage_bucket": "tutor-connect-6417a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726241518686:android:317ec094a6780c711280cf",
+        "android_client_info": {
+          "package_name": "com.tutor.connect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_sS4KFvGmtxdtAacgQ4t1gEiDtZD8ia8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
