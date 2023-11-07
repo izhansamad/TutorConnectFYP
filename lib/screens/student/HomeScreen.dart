@@ -1,14 +1,15 @@
 import 'package:badges/badges.dart';
 import 'package:badges/badges.dart' as badges;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tutor_connect_app/core/colors.dart';
 import 'package:tutor_connect_app/widget/searchBar.dart';
 
 import '../../utils/Teacher.dart';
 import '../../widget/category_box.dart';
 import '../../widget/popular_teacher.dart';
+import 'TeacherProfileScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   final void Function(int)? changePage; // Callback function
@@ -20,39 +21,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String userName = "";
-  List<Teacher> teachersList = [];
+  // List<Teacher>? teachersList = [];
+  var teachersList;
   @override
   void initState() {
     userName = FirebaseAuth.instance.currentUser!.displayName ?? "";
-    getAllTeachersFromFirestore();
     super.initState();
-  }
-
-  Future<List<Teacher>> getAllTeachersFromFirestore() async {
-    try {
-      // Reference to the Firestore collection where teacher data is stored
-      CollectionReference teachersCollection =
-          FirebaseFirestore.instance.collection('teacher');
-
-      QuerySnapshot teacherQuerySnapshot = await teachersCollection.get();
-
-      teacherQuerySnapshot.docs.forEach((teacherDoc) {
-        // Create a Teacher object from each document and add it to the list
-        Teacher teacher = Teacher.fromDocument(teacherDoc);
-        print(teacher.fullName);
-        teachersList.add(teacher);
-      });
-      setState(() {});
-      return teachersList;
-    } catch (error) {
-      // Handle any errors that occur during the Firestore query
-      print("Error fetching teachers: $error");
-      throw error;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final teachersDataProvider = Provider.of<AllTeachersDataProvider>(context);
+    teachersList = teachersDataProvider.teachersData;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
@@ -191,25 +171,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       // scrollDirection: Axis.vertical,
                       child: Column(
                         children: [
-                          for (Teacher teacher in teachersList)
-                            PopularTeacher(
-                              teacher: teacher,
-                            ),
-                          // PopularTeacher(
-                          //   teacher: teachers[4],
-                          // ),
-                          // PopularTeacher(
-                          //   teacher: teachers[0],
-                          // ),
-                          // PopularTeacher(
-                          //   teacher: teachers[1],
-                          // ),
-                          // PopularTeacher(
-                          //   teacher: teachers[2],
-                          // ),
-                          // PopularTeacher(
-                          //   teacher: teachers[3],
-                          // ),
+                          if (teachersList != null)
+                            for (Teacher teacher in teachersList!)
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (builder) =>
+                                              TeacherProfileScreen(
+                                                teacher: teacher,
+                                              )));
+                                },
+                                child: PopularTeacher(
+                                  teacher: teacher,
+                                ),
+                              ),
                         ],
                       ),
                     ),

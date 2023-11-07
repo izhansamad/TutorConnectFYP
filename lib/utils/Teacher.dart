@@ -58,6 +58,48 @@ class TeacherDataProvider extends ChangeNotifier {
   }
 }
 
+class AllTeachersDataProvider extends ChangeNotifier {
+  List<Teacher>? _teachersData;
+
+  List<Teacher>? get teachersData => _teachersData;
+
+  Future<void> refreshTeachersData() async {
+    final teachersData = await getAllTeachersFromFirestore();
+
+    if (teachersData != null) {
+      _teachersData = teachersData;
+      notifyListeners();
+    }
+  }
+
+  void setTeachersData(List<Teacher> teachersData) {
+    _teachersData = teachersData;
+    notifyListeners();
+  }
+
+  Future<List<Teacher>?> getAllTeachersFromFirestore() async {
+    try {
+      List<Teacher> teachersList = [];
+      CollectionReference teachersCollection =
+          FirebaseFirestore.instance.collection('teacher');
+
+      QuerySnapshot teacherQuerySnapshot = await teachersCollection.get();
+
+      teacherQuerySnapshot.docs.forEach((teacherDoc) {
+        // Create a Teacher object from each document and add it to the list
+        Teacher teacher = Teacher.fromDocument(teacherDoc);
+        print(teacher.fullName);
+        teachersList.add(teacher);
+      });
+      return teachersList;
+    } catch (error) {
+      // Handle any errors that occur during the Firestore query
+      print("Error fetching teachers: $error");
+      throw error;
+    }
+  }
+}
+
 class Teacher {
   final String fullName;
   final String email;

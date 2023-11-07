@@ -122,21 +122,11 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.w700)),
                           SizedBox(
-                            height: 15,
-                          ),
-                          Align(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              "About",
-                              style: TextStyle(
-                                color: Colors.grey.shade900,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                              ),
-                            ),
+                            height: 4,
                           ),
                           Text(
                             teacherData!.about,
+                            textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.grey, fontSize: 14),
                           ),
                           SizedBox(
@@ -295,50 +285,56 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                                   hintTxt: 'Teaching Speciality',
                                   isEnabled: editing,
                                   validator: validateRequired),
-                              Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0,
-                                    vertical: 8.0,
-                                  ),
-                                  child: TextFormField(
-                                    maxLines: maxLines,
-                                    onChanged: (text) {
-                                      int newMaxLines = (text.length / 40)
-                                          .ceil(); // 40 is an approximate character count per line
-                                      setState(() {
-                                        maxLines = newMaxLines;
-                                      });
-                                    },
-                                    controller: aboutController,
-                                    validator: validateRequired,
-                                    enabled: editing,
-                                    decoration: InputDecoration(
-                                        labelText: "About",
-                                        labelStyle: TextStyle(
-                                          color: primaryColor,
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                          borderSide: BorderSide(
-                                            color: primaryColor,
-                                          ),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15.0),
-                                          borderSide: BorderSide(
-                                            color: primaryColor,
-                                          ),
-                                        ),
-                                        suffixIcon: Icon(
-                                          Icons.info,
-                                          color: editing
-                                              ? primaryColor
-                                              : Colors.grey,
-                                        )),
-                                    cursorColor: primaryColor,
-                                  ))
+                              textField(
+                                  controller: aboutController,
+                                  icon: CupertinoIcons.info_circle_fill,
+                                  hintTxt: 'About',
+                                  isEnabled: editing,
+                                  validator: validateRequired),
+                              // Padding(
+                              //     padding: const EdgeInsets.symmetric(
+                              //       horizontal: 20.0,
+                              //       vertical: 8.0,
+                              //     ),
+                              //     child: TextFormField(
+                              //       maxLines: maxLines,
+                              //       onChanged: (text) {
+                              //         int newMaxLines = (text.length / 40)
+                              //             .ceil(); // 40 is an approximate character count per line
+                              //         setState(() {
+                              //           maxLines = newMaxLines;
+                              //         });
+                              //       },
+                              //       controller: aboutController,
+                              //       validator: validateRequired,
+                              //       enabled: editing,
+                              //       decoration: InputDecoration(
+                              //           labelText: "About",
+                              //           labelStyle: TextStyle(
+                              //             color: primaryColor,
+                              //           ),
+                              //           enabledBorder: OutlineInputBorder(
+                              //             borderRadius:
+                              //                 BorderRadius.circular(10.0),
+                              //             borderSide: BorderSide(
+                              //               color: primaryColor,
+                              //             ),
+                              //           ),
+                              //           focusedBorder: OutlineInputBorder(
+                              //             borderRadius:
+                              //                 BorderRadius.circular(15.0),
+                              //             borderSide: BorderSide(
+                              //               color: primaryColor,
+                              //             ),
+                              //           ),
+                              //           suffixIcon: Icon(
+                              //             Icons.info,
+                              //             color: editing
+                              //                 ? primaryColor
+                              //                 : Colors.grey,
+                              //           )),
+                              //       cursorColor: primaryColor,
+                              //     ))
                             ],
                           ),
                         ),

@@ -1,14 +1,17 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/colors.dart';
 import '../../data/json.dart';
+import '../../utils/Teacher.dart';
 import '../../widget/avatar_image.dart';
 import '../../widget/contact_box.dart';
 import '../../widget/mybutton.dart';
 import '../../widget/teacher_info_box.dart';
 
 class TeacherProfileScreen extends StatefulWidget {
-  const TeacherProfileScreen({Key? key}) : super(key: key);
+  Teacher teacher;
+  TeacherProfileScreen({required this.teacher, Key? key}) : super(key: key);
 
   @override
   _TeacherProfileScreenState createState() => _TeacherProfileScreenState();
@@ -28,71 +31,39 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         ),
       ),
       body: getBody(),
-      // floatingActionButton: Padding(
-      //   padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15),
-      //   child: MyButton(
-      //       disableButton: false,
-      //       bgColor: primaryColor,
-      //       title: "Connect Tutor",
-      //       onTap: () {}),
-      // ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   getBody() {
+    var teacher = widget.teacher;
     return SingleChildScrollView(
       padding: EdgeInsets.only(left: 15, right: 15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text("Available time 8:00am - 5:00pm",
-              style: TextStyle(fontSize: 13, color: Colors.green)),
+          Text("Available hours 8:00am - 5:00pm",
+              style: TextStyle(fontSize: 14, color: Colors.green)),
           SizedBox(
             height: 25,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Sir. Adam Zampa",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  Text(
-                    "Computer",
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
-                ],
-              ),
-              AvatarImage(
-                teachers[0]['image'].toString(),
-                radius: 10,
-              )
-            ],
+          AvatarImage(
+            height: 100,
+            width: 100,
+            teacher.image ?? teachers[0]['image'].toString(),
+            radius: 40,
           ),
           SizedBox(
-            height: 18,
+            height: 15,
           ),
-          Align(
-            alignment: Alignment.topLeft,
-            child: Text(
-              "About",
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
+          Text(teacher.fullName,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          SizedBox(
+            height: 5,
           ),
           Text(
-            "Lorem ipsum dolor sit amet, consectetur adipiscing el, ullamex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-            style: TextStyle(color: Colors.grey, fontSize: 13),
+            teacher.about,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
           ),
           SizedBox(
             height: 25,
@@ -166,13 +137,13 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               TeacherInfoBox(
-                value: "500+",
-                info: "Students",
-                icon: Icons.groups_rounded,
-                color: Colors.green,
+                value: teacher.speciality,
+                info: "Speciality",
+                icon: CupertinoIcons.book_fill,
+                color: Colors.blue,
               ),
               TeacherInfoBox(
-                value: "10 Years",
+                value: teacher.experience,
                 info: "Experience",
                 icon: Icons.medical_services_rounded,
                 color: Colors.purple,
@@ -185,17 +156,17 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // TeacherInfoBox(
-              //   value: "28+",
-              //   info: "Successful OT",
-              //   icon: Icons.bloodtype_rounded,
-              //   color: Colors.blue,
-              // ),
               TeacherInfoBox(
-                value: "8+",
-                info: "Certificates Achieved",
+                value: teacher.qualification,
+                info: "Qualification",
                 icon: Icons.card_membership_rounded,
                 color: Colors.orange,
+              ),
+              TeacherInfoBox(
+                value: "1000+",
+                info: "Students",
+                icon: Icons.groups_rounded,
+                color: Colors.green,
               ),
             ],
           ),

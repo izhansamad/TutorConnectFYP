@@ -27,6 +27,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => StudentDataProvider()),
         ChangeNotifierProvider(create: (context) => TeacherDataProvider()),
+        ChangeNotifierProvider(create: (context) => AllTeachersDataProvider()),
       ],
       child: MyApp(),
     ),

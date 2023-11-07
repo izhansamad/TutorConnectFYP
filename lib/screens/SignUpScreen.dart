@@ -32,6 +32,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController qualificationController = TextEditingController();
   TextEditingController experienceController = TextEditingController();
   TextEditingController specialityController = TextEditingController();
+  TextEditingController aboutController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool isLoading = false;
@@ -109,6 +110,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 controller: specialityController,
                                 icon: CupertinoIcons.book_fill,
                                 hintTxt: 'Teaching Speciality',
+                                validator: isTeacher ? validateRequired : null),
+                          ),
+                          Visibility(
+                            visible: isTeacher,
+                            child: textField(
+                                controller: aboutController,
+                                icon: CupertinoIcons.info_circle_fill,
+                                hintTxt: 'About',
                                 validator: isTeacher ? validateRequired : null),
                           ),
                           _imageFile != null
@@ -263,6 +272,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               qualificationController.text,
               experienceController.text,
               specialityController.text,
+              aboutController.text,
               imageUrl)
           : saveStudentToFirestore(
               emailController.text,
@@ -289,6 +299,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
       }
     }).onError((error, stackTrace) {
+      if (error is FirebaseAuthException) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.code)));
+      }
       print(error.toString());
       setState(() {
         isLoading = false;
@@ -323,6 +337,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       String qualification,
       String experience,
       String speciality,
+      String about,
       String image) async {
     try {
       final userDocRef = FirebaseFirestore.instance
@@ -336,7 +351,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'qualification': qualification,
         'experience': experience,
         'speciality': speciality,
-        'about': "",
+        'about': about,
         'rating': '5',
         'image': image
       });

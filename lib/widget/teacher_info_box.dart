@@ -44,6 +44,7 @@ class TeacherInfoBox extends StatelessWidget {
           ),
           Text(
             value,
+            textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           SizedBox(

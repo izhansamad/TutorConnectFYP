@@ -9,6 +9,7 @@ import 'package:tutor_connect_app/screens/ChatScreen.dart';
 import 'package:tutor_connect_app/screens/ProfileScreen.dart';
 import 'package:tutor_connect_app/screens/student/HomeScreen.dart';
 import 'package:tutor_connect_app/screens/student/TeacherScreen.dart';
+import 'package:tutor_connect_app/utils/Teacher.dart';
 
 import '../../utils/Student.dart';
 
@@ -31,8 +32,6 @@ class _HomeState extends State<Home> {
     TeachersScreen(),
     ChatScreen(),
     ProfileScreen()
-    // Container(),
-    // Container()
   ];
 
   @override
@@ -40,15 +39,26 @@ class _HomeState extends State<Home> {
     _pageController = new PageController(initialPage: 0);
     _currentIndex = 0;
     loadStudentData();
+    loadteachersData();
     super.initState();
   }
 
+  Future<void> loadteachersData() async {
+    // final studentData = await getStudentFromFirestore();
+
+    final teachersDataProvider =
+        Provider.of<AllTeachersDataProvider>(context, listen: false);
+    await teachersDataProvider.refreshTeachersData();
+
+    setState(() {});
+  }
+
   Future<void> loadStudentData() async {
-    final teacherData = await getStudentFromFirestore();
+    // final studentData = await getStudentFromFirestore();
 
     final studentDataProvider =
         Provider.of<StudentDataProvider>(context, listen: false);
-    studentDataProvider.setStudentData(teacherData!);
+    await studentDataProvider.refreshStudentData();
 
     setState(() {});
   }
@@ -128,11 +138,6 @@ class _HomeState extends State<Home> {
               textAlign: TextAlign.center,
               title: Text('Chats'),
               icon: Icon(CupertinoIcons.chat_bubble_2_fill)),
-          // BottomNavyBarItem(
-          //     activeColor: primaryColor,
-          //     inactiveColor: Colors.black,
-          //     title: Text('Booking'),
-          //     icon: Icon(Icons.event_note_rounded)),
           BottomNavyBarItem(
               activeColor: primaryColor,
               inactiveColor: Colors.black,

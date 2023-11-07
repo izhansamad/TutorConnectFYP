@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../data/json.dart';
+import '../utils/Teacher.dart';
+
 class TeacherBox extends StatelessWidget {
   TeacherBox(
       {Key? key,
@@ -8,7 +11,7 @@ class TeacherBox extends StatelessWidget {
       required this.onTap})
       : super(key: key);
   final int index;
-  final teacher;
+  Teacher teacher;
   final GestureTapCallback onTap;
 
   @override
@@ -39,20 +42,21 @@ class TeacherBox extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
-                          image: NetworkImage(teacher["image"]),
+                          image: NetworkImage(
+                              teacher.image ?? teachers[0]['image'].toString()),
                           fit: BoxFit.cover),
                     )),
               ),
               SizedBox(height: 10),
               Text(
-                teacher["name"],
+                teacher.fullName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 3),
+              SizedBox(height: 1),
               Text(
-                teacher["skill"],
+                teacher.speciality,
                 style: TextStyle(color: Colors.grey, fontSize: 13),
               ),
               SizedBox(height: 3),
@@ -67,7 +71,7 @@ class TeacherBox extends StatelessWidget {
                     width: 2,
                   ),
                   Text(
-                    "${teacher["review"]} Review",
+                    "${teacher.rating} Review",
                     style: TextStyle(fontSize: 12),
                   )
                 ],

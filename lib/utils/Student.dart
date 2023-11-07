@@ -7,7 +7,7 @@ class StudentDataProvider extends ChangeNotifier {
 
   Student? get studentData => _studentData;
 
-  Future<void> refreshTeacherData() async {
+  Future<void> refreshStudentData() async {
     final studentData = await getStudentFromFirestore();
 
     if (studentData != null) {
