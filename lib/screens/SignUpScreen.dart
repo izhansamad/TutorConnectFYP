@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherHome.dart';
 import 'package:tutor_connect_app/utils/PrefsManager.dart';
+import 'package:tutor_connect_app/widget/avatar_image.dart';
 import 'package:tutor_connect_app/widget/textField.dart';
 
 import '../core/colors.dart';
@@ -121,31 +122,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 validator: isTeacher ? validateRequired : null),
                           ),
                           _imageFile != null
-                              ? Container(
-                                  margin: EdgeInsets.only(top: 15),
+                              ? AvatarImage(
+                                  _imageFile!.path,
+                                  isFileImage: true,
                                   width: 150,
                                   height: 150,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Theme.of(context).cardColor,
-                                      width: 2.0,
-                                    ),
-                                    color: Colors.transparent,
-                                    borderRadius: BorderRadius.circular(100.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.1),
-                                        spreadRadius: 1,
-                                        blurRadius: 1,
-                                        offset: Offset(1, 1),
-                                      ),
-                                    ],
-                                    image: DecorationImage(
-                                      image: FileImage(File(_imageFile!.path)),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+                                  radius: 100,
                                 )
+                              // ? Container(
+                              //     margin: EdgeInsets.only(top: 15),
+                              //     width: 150,
+                              //     height: 150,
+                              //     decoration: BoxDecoration(
+                              //       border: Border.all(
+                              //         color: Theme.of(context).cardColor,
+                              //         width: 2.0,
+                              //       ),
+                              //       color: Colors.transparent,
+                              //       borderRadius: BorderRadius.circular(100.0),
+                              //       boxShadow: [
+                              //         BoxShadow(
+                              //           color: Colors.grey.withOpacity(0.1),
+                              //           spreadRadius: 1,
+                              //           blurRadius: 1,
+                              //           offset: Offset(1, 1),
+                              //         ),
+                              //       ],
+                              //       image: DecorationImage(
+                              //         image: FileImage(File(_imageFile!.path)),
+                              //         fit: BoxFit.cover,
+                              //       ),
+                              //     ),
+                              //   )
                               : Container(),
                           ElevatedButton(
                               onPressed: () async {
@@ -236,7 +244,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     if (user != null) {
       String imagePath =
-          'images/${fullNameController.text}/${DateTime.now()}.png';
+          'images/${fullNameController.text}-${DateTime.now()}.png';
       Reference storageReference =
           FirebaseStorage.instance.ref().child(imagePath);
       UploadTask uploadTask = storageReference.putFile(File(imageFile.path));
