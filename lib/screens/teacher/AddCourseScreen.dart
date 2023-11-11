@@ -121,34 +121,49 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     setState(() {
       isLoading = true;
     });
+
     String imageUrl = "";
     if (_imageFile != null) {
       imageUrl = await _uploadImageToFirebaseStorage(_imageFile!);
     }
+
     await saveCourseToFirestore(
-        courseNameController.text,
-        courseDescriptionController.text,
-        courseObjectiveController.text,
-        courseFeeController.text,
-        courseDurationController.text,
-        imageUrl);
+      courseNameController.text,
+      courseDescriptionController.text,
+      courseObjectiveController.text,
+      courseFeeController.text,
+      courseDurationController.text,
+      imageUrl,
+    );
+
     setState(() {
       isLoading = false;
     });
   }
 
   Future<void> saveCourseToFirestore(
-      String courseName,
-      String courseDesc,
-      String courseObj,
-      String courseFee,
-      String courseDuration,
-      String courseImage) async {
+    String courseName,
+    String courseDesc,
+    String courseObj,
+    String courseFee,
+    String courseDuration,
+    String courseImage,
+  ) async {
     try {
       final userDocRef = FirebaseFirestore.instance
           .collection('courses')
           .doc(FirebaseAuth.instance.currentUser!.uid);
-      await userDocRef.set({
+
+      // Get the existing list of courses
+      var existingData = (await userDocRef.get()).data();
+      List<Map<String, dynamic>> existingCourses = [];
+
+      if (existingData != null && existingData['courses'] != null) {
+        existingCourses = List.from(existingData['courses']);
+      }
+
+      // Add the new course to the list
+      existingCourses.add({
         'courseName': courseName,
         'courseDesc': courseDesc,
         'courseObj': courseObj,
@@ -156,6 +171,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         'courseDuration': courseDuration,
         'courseImage': courseImage,
       });
+
+      // Update the document with the new list of courses
+      await userDocRef.set({
+        'courses': existingCourses,
+      });
+
       print('Course data saved to Firestore');
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Course Saved")));

@@ -2,9 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:tutor_connect_app/core/colors.dart';
+import 'package:tutor_connect_app/screens/student/CourseDetailScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/AddCourseScreen.dart';
+import 'package:tutor_connect_app/utils/PrefsManager.dart';
+import 'package:tutor_connect_app/widget/CourseBox.dart';
 
 import '../../utils/Course.dart';
+import '../../widget/searchBar.dart';
 
 class TeacherCoursesScreen extends StatefulWidget {
   const TeacherCoursesScreen({Key? key}) : super(key: key);
@@ -14,9 +18,18 @@ class TeacherCoursesScreen extends StatefulWidget {
 }
 
 class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
+  List<Course> courses = [];
+  bool loading = false;
+  bool isTeacher = false;
+
   @override
   void initState() {
-    getCourses();
+    isTeacher = PrefsManager().getBool('isTeacher');
+    if (isTeacher) {
+      getTeacherCourses();
+    } else {
+      getAllCourses();
+    }
     super.initState();
   }
 
@@ -31,56 +44,151 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
-      body: getBody(),
-      floatingActionButton: FloatingActionButton(
-          tooltip: "Add Course",
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (builder) => AddCourseScreen()));
-          },
-          backgroundColor: primaryColor,
-          child: Icon(
-            Icons.add,
-            color: Colors.white,
-          )),
+      body: loading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : getBody(),
+      floatingActionButton: isTeacher
+          ? FloatingActionButton(
+              tooltip: "Add Course",
+              onPressed: () {
+                Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (builder) => AddCourseScreen()))
+                    .then((_) => setState(() {}));
+              },
+              backgroundColor: primaryColor,
+              child: Icon(
+                Icons.add,
+                color: Colors.white,
+              ))
+          : null,
     );
   }
 
   getBody() {
-    return SingleChildScrollView(
-        child: Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            child: Column(children: [
-              Container(
-                child: Center(
-                  child: Text("No Courses Available"),
-                ),
+    return Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: Column(
+          children: [
+            if (!isTeacher)
+              Row(
+                children: [
+                  Expanded(child: CustomSearch()),
+                  IconButton(
+                    icon: Icon(
+                      Icons.filter_list_rounded,
+                      color: primaryColor,
+                      size: 35,
+                    ),
+                    onPressed: () {},
+                  ),
+                ],
               ),
-            ])));
+            if (!isTeacher)
+              SizedBox(
+                height: 10,
+              ),
+            courses.isEmpty
+                ? Expanded(
+                    child: Center(
+                      child: Text("No Courses Available"),
+                    ),
+                  )
+                : Expanded(
+                    child: ListView.builder(
+                        itemCount: courses.length,
+                        itemBuilder: (BuildContext context, int index) =>
+                            GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (builder) =>
+                                              CourseDetailScreen(
+                                                  course: courses[index])));
+                                },
+                                child: CourseBox(course: courses[index]))),
+                  ),
+          ],
+        ));
   }
 
-  Future<List<Course>> getCourses() async {
+  Future<List<Course>> getTeacherCourses() async {
+    setState(() {
+      loading = true;
+    });
+
     var userUid = FirebaseAuth.instance.currentUser!.uid;
 
     try {
-      // Get courses data from Firestore
       var snapshot = await FirebaseFirestore.instance
           .collection('courses')
           .doc(userUid)
           .get();
 
       if (snapshot.exists) {
-        // If the document exists, parse the course data into a List<Course>
-        List<Course> courses = [Course.fromDocument(snapshot)];
+        var data = snapshot.data() as Map<String, dynamic>;
+        var courseData = data['courses'] as List<dynamic>;
 
-        print(courses[0].courseName);
+        courses =
+            courseData.map((courseMap) => Course.fromMap(courseMap)).toList();
+
+        setState(() {
+          loading = false;
+        });
+
         return courses;
       } else {
-        // If the document doesn't exist, return an empty list
+        setState(() {
+          loading = false;
+        });
         return [];
       }
     } catch (e) {
       // Handle errors
+      setState(() {
+        loading = false;
+      });
+      print('Error retrieving courses: $e');
+      return [];
+    }
+  }
+
+  Future<List<Course>> getAllCourses() async {
+    setState(() {
+      loading = true;
+    });
+
+    try {
+      var querySnapshot =
+          await FirebaseFirestore.instance.collection('courses').get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        courses = querySnapshot.docs
+            .expand((doc) => (doc.data()!['courses'] as List<dynamic>)
+                .map((courseMap) => Course.fromMap(courseMap)))
+            .toList();
+
+        setState(() {
+          loading = false;
+        });
+
+        return courses;
+      } else {
+        setState(() {
+          loading = false;
+        });
+        // If no documents or courses are found, return an empty list
+        return [];
+      }
+    } catch (e) {
+      // Handle errors
+      setState(() {
+        loading = false;
+      });
       print('Error retrieving courses: $e');
       return [];
     }

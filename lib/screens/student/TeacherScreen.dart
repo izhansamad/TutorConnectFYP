@@ -31,7 +31,7 @@ class _TeachersScreenState extends State<TeachersScreen> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 10),
+            padding: const EdgeInsets.only(right: 15),
             child: Icon(
               Icons.favorite,
               color: Colors.red.shade800,

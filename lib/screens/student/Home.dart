@@ -9,6 +9,7 @@ import 'package:tutor_connect_app/screens/ChatScreen.dart';
 import 'package:tutor_connect_app/screens/ProfileScreen.dart';
 import 'package:tutor_connect_app/screens/student/HomeScreen.dart';
 import 'package:tutor_connect_app/screens/student/TeacherScreen.dart';
+import 'package:tutor_connect_app/screens/teacher/TeacherCoursesScreen.dart';
 import 'package:tutor_connect_app/utils/Teacher.dart';
 
 import '../../utils/Student.dart';
@@ -30,6 +31,7 @@ class _HomeState extends State<Home> {
   List<Widget> _pages = [
     HomeScreen(),
     TeachersScreen(),
+    TeacherCoursesScreen(),
     ChatScreen(),
     ProfileScreen()
   ];
@@ -132,6 +134,12 @@ class _HomeState extends State<Home> {
               textAlign: TextAlign.center,
               title: Text('Teachers'),
               icon: Icon(Icons.school)),
+          BottomNavyBarItem(
+              activeColor: primaryColor,
+              inactiveColor: Colors.black,
+              textAlign: TextAlign.center,
+              title: Text('Courses'),
+              icon: Icon(CupertinoIcons.book_fill)),
           BottomNavyBarItem(
               activeColor: primaryColor,
               inactiveColor: Colors.black,

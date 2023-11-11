@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             icon: Icons.visibility_off,
                             isObs: true,
                             hintTxt: 'Password',
-                            validator: validatePassword),
+                            validator: null),
                       ],
                     ),
                   ),
