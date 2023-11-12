@@ -1,13 +1,18 @@
+import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/colors.dart';
 import '../../data/json.dart';
+import '../../utils/Course.dart';
+import '../../utils/GetFirestore.dart';
 import '../../utils/Teacher.dart';
+import '../../widget/CourseBox.dart';
 import '../../widget/avatar_image.dart';
 import '../../widget/contact_box.dart';
 import '../../widget/mybutton.dart';
 import '../../widget/teacher_info_box.dart';
+import 'CourseDetailScreen.dart';
 
 class TeacherProfileScreen extends StatefulWidget {
   Teacher teacher;
@@ -18,6 +23,27 @@ class TeacherProfileScreen extends StatefulWidget {
 }
 
 class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
+  List<Course>? courses;
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    getCourses();
+    _pageController.addListener(() {
+      setState(() {
+        _currentPage = _pageController.page!.round();
+      });
+    });
+    super.initState();
+  }
+
+  void getCourses() async {
+    GetFirestore getFirestore = GetFirestore();
+    courses = await getFirestore.getTeacherCourses(widget.teacher.id);
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,7 +196,44 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               ),
             ],
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Text("Courses Offered",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+            ),
+          ),
+          if (courses != null)
+            Container(
+              height: 250, // Adjust the height as needed
+              child: PageView(
+                controller: _pageController,
+                children: [
+                  for (Course course in courses!)
+                    GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (builder) =>
+                                      CourseDetailScreen(course: course)));
+                        },
+                        child: CourseBox(course: course)),
+                ],
+              ),
+            ),
+          if (courses != null)
+            DotsIndicator(
+              dotsCount: courses!.length,
+              position: _currentPage,
+              decorator: DotsDecorator(
+                color: Colors.grey,
+                activeColor: primaryColor,
+              ),
+            ),
+          if (courses != null) SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.only(bottom: 15),
             child: MyButton(

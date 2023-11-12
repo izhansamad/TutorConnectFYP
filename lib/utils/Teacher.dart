@@ -88,7 +88,6 @@ class AllTeachersDataProvider extends ChangeNotifier {
       teacherQuerySnapshot.docs.forEach((teacherDoc) {
         // Create a Teacher object from each document and add it to the list
         Teacher teacher = Teacher.fromDocument(teacherDoc);
-        print(teacher.fullName);
         teachersList.add(teacher);
       });
       return teachersList;
@@ -101,6 +100,7 @@ class AllTeachersDataProvider extends ChangeNotifier {
 }
 
 class Teacher {
+  final String id;
   final String fullName;
   final String email;
   final String phone;
@@ -112,6 +112,7 @@ class Teacher {
   final String? image;
 
   Teacher({
+    required this.id,
     required this.fullName,
     required this.email,
     required this.phone,
@@ -125,6 +126,7 @@ class Teacher {
 
   factory Teacher.fromMap(Map<String, dynamic> map) {
     return Teacher(
+        id: map['id'],
         fullName: map['fullName'],
         email: map['email'],
         phone: map['phoneNumber'],

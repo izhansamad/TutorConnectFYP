@@ -1,10 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/colors.dart';
 import '../../utils/Course.dart';
+import '../../utils/Teacher.dart';
 import '../../widget/avatar_image.dart';
 import '../../widget/mybutton.dart';
+import '../../widget/popular_teacher.dart';
 import '../../widget/teacher_info_box.dart';
+import 'TeacherProfileScreen.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   CourseDetailScreen({super.key, required this.course});
@@ -15,6 +19,23 @@ class CourseDetailScreen extends StatefulWidget {
 }
 
 class _CourseDetailScreenState extends State<CourseDetailScreen> {
+  Teacher? teacherData;
+  @override
+  void initState() {
+    getTeacherInfo(widget.course.teacherId);
+    super.initState();
+  }
+
+  void getTeacherInfo(String teacherDocId) async {
+    CollectionReference usersCollection =
+        FirebaseFirestore.instance.collection('teacher');
+    DocumentSnapshot userDoc = await usersCollection.doc(teacherDocId).get();
+    if (userDoc.exists) {
+      teacherData = Teacher.fromDocument(userDoc);
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final course = widget.course;
@@ -38,21 +59,37 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               ),
             ),
             SizedBox(
-              height: 15,
-            ),
-            Text(course.courseName,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-            SizedBox(
-              height: 5,
+              height: 10,
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                course.courseDesc,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 18.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Text(course.courseName,
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
               ),
             ),
+            SizedBox(
+              height: 3,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  course.courseDesc,
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                ),
+              ),
+            ),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            //   child: Text(
+            //     course.courseDesc,
+            //     style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+            //   ),
+            // ),
             SizedBox(
               height: 25,
             ),
@@ -139,6 +176,32 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             //   ],
             // ),
             // SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Text("Instructor",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+              ),
+            ),
+            if (teacherData != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (builder) => TeacherProfileScreen(
+                                  teacher: teacherData!,
+                                )));
+                  },
+                  child: PopularTeacher(
+                    teacher: teacherData!,
+                  ),
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
               child: MyButton(

@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tutor_connect_app/widget/mybutton.dart';
 
 import '../../core/colors.dart';
 import '../../widget/avatar_image.dart';
@@ -93,13 +94,13 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                       setState(() {});
                     },
                     child: Text('Upload Course Image')),
-                ElevatedButton(
-                  onPressed: () {
+                MyButton(
+                  onTap: () {
                     if (_formKey.currentState!.validate()) {
                       addCourse();
                     }
                   },
-                  child: Text("Add Course"),
+                  title: "Add Course",
                 ),
               ],
             ),
@@ -170,6 +171,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         'courseFee': courseFee,
         'courseDuration': courseDuration,
         'courseImage': courseImage,
+        'teacherId': FirebaseAuth.instance.currentUser!.uid
       });
 
       // Update the document with the new list of courses

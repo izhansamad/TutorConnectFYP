@@ -8,6 +8,7 @@ class Course {
   final String courseDuration;
   final String courseImage;
   final String? courseRating;
+  final String teacherId;
 
   Course({
     required this.courseName,
@@ -17,6 +18,7 @@ class Course {
     required this.courseDuration,
     required this.courseImage,
     required this.courseRating,
+    required this.teacherId,
   });
 
   factory Course.fromMap(Map<String, dynamic> map) {
@@ -28,6 +30,7 @@ class Course {
       courseDuration: map['courseDuration'],
       courseImage: map['courseImage'],
       courseRating: map['courseRating'],
+      teacherId: map['teacherId'],
     );
   }
 

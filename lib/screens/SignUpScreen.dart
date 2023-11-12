@@ -352,6 +352,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           .collection('teacher')
           .doc(FirebaseAuth.instance.currentUser!.uid);
       await userDocRef.set({
+        'id': FirebaseAuth.instance.currentUser!.uid,
         'email': email,
         'fullName': fullName,
         'phoneNumber': phoneNumber,

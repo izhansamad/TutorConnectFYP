@@ -64,7 +64,7 @@ class PopularTeacher extends StatelessWidget {
                         width: 2,
                       ),
                       Text(
-                        "${teacher.rating} Review",
+                        "${teacher.rating} Star",
                         style: TextStyle(fontSize: 12),
                       )
                     ],
