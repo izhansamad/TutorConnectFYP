@@ -50,4 +50,6 @@ class PrefsManager {
   bool getBool(String key, {bool defaultValue = false}) {
     return _prefs?.getBool(key) ?? defaultValue;
   }
+
+  String IS_TEACHER_KEY = 'isTeacher';
 }

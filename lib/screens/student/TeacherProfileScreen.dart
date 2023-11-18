@@ -26,6 +26,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   List<Course>? courses;
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  List<Map<String, dynamic>> customFields = [];
 
   @override
   void initState() {
@@ -62,6 +63,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
   getBody() {
     var teacher = widget.teacher;
+    customFields = teacher.customFields ?? [];
     return SingleChildScrollView(
       padding: EdgeInsets.only(left: 15, right: 15),
       child: Column(
@@ -156,8 +158,29 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               ),
             ],
           ),
+          SizedBox(height: 20),
+          for (int i = 0; i < customFields.length; i++)
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      customFields[i]['heading'],
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(customFields[i]['value'],
+                        style: TextStyle(color: Colors.grey, fontSize: 14)),
+                    SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ),
           SizedBox(
-            height: 25,
+            height: 20,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

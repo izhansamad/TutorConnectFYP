@@ -9,6 +9,7 @@ class Course {
   final String courseImage;
   final String? courseRating;
   final String teacherId;
+  List<Map<String, dynamic>>? customFields;
 
   Course({
     required this.courseName,
@@ -19,6 +20,7 @@ class Course {
     required this.courseImage,
     required this.courseRating,
     required this.teacherId,
+    this.customFields,
   });
 
   factory Course.fromMap(Map<String, dynamic> map) {
@@ -31,6 +33,7 @@ class Course {
       courseImage: map['courseImage'],
       courseRating: map['courseRating'],
       teacherId: map['teacherId'],
+      customFields: List<Map<String, dynamic>>.from(map['customFields'] ?? []),
     );
   }
 

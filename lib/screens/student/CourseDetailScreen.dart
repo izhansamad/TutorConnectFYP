@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:tutor_connect_app/screens/teacher/AddCourseScreen.dart';
+import 'package:tutor_connect_app/utils/PrefsManager.dart';
 
 import '../../core/colors.dart';
 import '../../utils/Course.dart';
@@ -20,6 +22,7 @@ class CourseDetailScreen extends StatefulWidget {
 
 class _CourseDetailScreenState extends State<CourseDetailScreen> {
   Teacher? teacherData;
+  List<Map<String, dynamic>> customFields = [];
   @override
   void initState() {
     getTeacherInfo(widget.course.teacherId);
@@ -39,6 +42,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final course = widget.course;
+    customFields = widget.course.customFields ?? [];
     return Scaffold(
       appBar: AppBar(
         title: Text("Course Details"),
@@ -83,13 +87,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                 ),
               ),
             ),
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            //   child: Text(
-            //     course.courseDesc,
-            //     style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
-            //   ),
-            // ),
             SizedBox(
               height: 25,
             ),
@@ -138,6 +135,45 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             SizedBox(
               height: 25,
             ),
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Objective",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(course.courseObj,
+                        style: TextStyle(color: Colors.grey, fontSize: 14)),
+                    SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ),
+            for (int i = 0; i < customFields.length; i++)
+              Align(
+                alignment: Alignment.topLeft,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        customFields[i]['heading'],
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(customFields[i]['value'],
+                          style: TextStyle(color: Colors.grey, fontSize: 14)),
+                      SizedBox(height: 10),
+                    ],
+                  ),
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -158,24 +194,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             SizedBox(
               height: 10,
             ),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //   children: [
-            //     TeacherInfoBox(
-            //       value: teacher.qualification,
-            //       info: "Qualification",
-            //       icon: Icons.card_membership_rounded,
-            //       color: Colors.orange,
-            //     ),
-            //     TeacherInfoBox(
-            //       value: "1000+",
-            //       info: "Students",
-            //       icon: Icons.groups_rounded,
-            //       color: Colors.green,
-            //     ),
-            //   ],
-            // ),
-            // SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18.0),
               child: Align(
@@ -202,14 +220,32 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   ),
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-              child: MyButton(
-                  disableButton: false,
-                  bgColor: primaryColor,
-                  title: "Enroll Now",
-                  onTap: () {}),
-            ),
+            PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY)
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 20),
+                    child: MyButton(
+                        disableButton: false,
+                        bgColor: primaryColor,
+                        title: "Edit Course",
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (builder) => AddCourseScreen(
+                                        course: course,
+                                      )));
+                        }),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 20),
+                    child: MyButton(
+                        disableButton: false,
+                        bgColor: primaryColor,
+                        title: "Enroll Now",
+                        onTap: () {}),
+                  ),
           ],
         ),
       ),

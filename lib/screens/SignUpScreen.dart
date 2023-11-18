@@ -15,6 +15,7 @@ import '../core/colors.dart';
 import '../core/space.dart';
 import '../core/text_style.dart';
 import '../widget/main_button.dart';
+import '../widget/mybutton.dart';
 import 'student/Home.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -34,6 +35,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController experienceController = TextEditingController();
   TextEditingController specialityController = TextEditingController();
   TextEditingController aboutController = TextEditingController();
+  List<TextEditingController> customFieldHeadingControllers = [];
+  List<TextEditingController> customFieldValueControllers = [];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool isLoading = false;
@@ -121,6 +124,67 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 hintTxt: 'About',
                                 validator: isTeacher ? validateRequired : null),
                           ),
+                          for (int i = 0;
+                              i < customFieldHeadingControllers.length;
+                              i++)
+                            Visibility(
+                              visible: isTeacher,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: textField(
+                                          controller:
+                                              customFieldHeadingControllers[i],
+                                          icon: Icons.text_fields,
+                                          hintTxt:
+                                              'Custom Field Heading ${i + 1}',
+                                          validator: validateRequired,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        padding: EdgeInsets.only(right: 8),
+                                        icon: Icon(Icons.close),
+                                        onPressed: () {
+                                          setState(() {
+                                            customFieldHeadingControllers
+                                                .removeAt(i);
+                                            customFieldValueControllers
+                                                .removeAt(i);
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  textField(
+                                    controller: customFieldValueControllers[i],
+                                    icon: Icons.abc,
+                                    hintTxt: 'Custom Field Value ${i + 1}',
+                                    validator: validateRequired,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          SizedBox(height: 10),
+                          Visibility(
+                            visible: isTeacher,
+                            child: MyButton(
+                              onTap: () {
+                                customFieldHeadingControllers
+                                    .add(TextEditingController());
+                                customFieldValueControllers
+                                    .add(TextEditingController());
+                                setState(() {});
+                              },
+                              title: "Add Another Field",
+                            ),
+                          ),
+                          Visibility(
+                              visible: isTeacher,
+                              child: SizedBox(
+                                height: 15,
+                              )),
                           _imageFile != null
                               ? AvatarImage(
                                   _imageFile!.path,
@@ -129,40 +193,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   height: 150,
                                   radius: 100,
                                 )
-                              // ? Container(
-                              //     margin: EdgeInsets.only(top: 15),
-                              //     width: 150,
-                              //     height: 150,
-                              //     decoration: BoxDecoration(
-                              //       border: Border.all(
-                              //         color: Theme.of(context).cardColor,
-                              //         width: 2.0,
-                              //       ),
-                              //       color: Colors.transparent,
-                              //       borderRadius: BorderRadius.circular(100.0),
-                              //       boxShadow: [
-                              //         BoxShadow(
-                              //           color: Colors.grey.withOpacity(0.1),
-                              //           spreadRadius: 1,
-                              //           blurRadius: 1,
-                              //           offset: Offset(1, 1),
-                              //         ),
-                              //       ],
-                              //       image: DecorationImage(
-                              //         image: FileImage(File(_imageFile!.path)),
-                              //         fit: BoxFit.cover,
-                              //       ),
-                              //     ),
-                              //   )
                               : Container(),
-                          ElevatedButton(
-                              onPressed: () async {
+                          MyButton(
+                              onTap: () async {
                                 final ImagePicker _picker = ImagePicker();
                                 _imageFile = await _picker.pickImage(
                                     source: ImageSource.gallery);
                                 setState(() {});
                               },
-                              child: Text('Upload Image'))
+                              title: ('Upload Image'))
                         ],
                       ),
                     ),
@@ -347,6 +386,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
       String speciality,
       String about,
       String image) async {
+    List<Map<String, dynamic>> updatedCustomFields = [];
+    for (int i = 0; i < customFieldHeadingControllers.length; i++) {
+      String heading = customFieldHeadingControllers[i].text;
+      String value = customFieldValueControllers[i].text;
+
+      if (heading.isNotEmpty || value.isNotEmpty) {
+        updatedCustomFields.add({'heading': heading, 'value': value});
+      }
+    }
     try {
       final userDocRef = FirebaseFirestore.instance
           .collection('teacher')
@@ -362,7 +410,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'speciality': speciality,
         'about': about,
         'rating': '5',
-        'image': image
+        'image': image,
+        'customFields': updatedCustomFields,
       });
       print('Teacher data saved to Firestore');
     } catch (e) {

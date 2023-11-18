@@ -110,32 +110,35 @@ class Teacher {
   final String qualification;
   final String rating;
   final String? image;
+  List<Map<String, dynamic>>? customFields;
 
-  Teacher({
-    required this.id,
-    required this.fullName,
-    required this.email,
-    required this.phone,
-    required this.about,
-    required this.experience,
-    required this.speciality,
-    required this.qualification,
-    required this.rating,
-    required this.image,
-  });
+  Teacher(
+      {required this.id,
+      required this.fullName,
+      required this.email,
+      required this.phone,
+      required this.about,
+      required this.experience,
+      required this.speciality,
+      required this.qualification,
+      required this.rating,
+      required this.image,
+      this.customFields});
 
   factory Teacher.fromMap(Map<String, dynamic> map) {
     return Teacher(
-        id: map['id'],
-        fullName: map['fullName'],
-        email: map['email'],
-        phone: map['phoneNumber'],
-        about: map['about'],
-        experience: map['experience'],
-        speciality: map['speciality'],
-        qualification: map['qualification'],
-        image: map['image'],
-        rating: map['rating']);
+      id: map['id'],
+      fullName: map['fullName'],
+      email: map['email'],
+      phone: map['phoneNumber'],
+      about: map['about'],
+      experience: map['experience'],
+      speciality: map['speciality'],
+      qualification: map['qualification'],
+      image: map['image'],
+      rating: map['rating'],
+      customFields: List<Map<String, dynamic>>.from(map['customFields'] ?? []),
+    );
   }
 
   factory Teacher.fromDocument(DocumentSnapshot document) {

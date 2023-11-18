@@ -1,10 +1,10 @@
 import 'package:badges/badges.dart';
 import 'package:badges/badges.dart' as badges;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tutor_connect_app/screens/teacher/TeacherEditProfileScreen.dart';
 
 import '../../core/colors.dart';
 import '../../data/json.dart';
@@ -23,14 +23,8 @@ class TeacherHomeScreen extends StatefulWidget {
 class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   Teacher? teacherData;
-  int maxLines = 1;
-  TextEditingController fullNameController = TextEditingController();
-  TextEditingController phoneController = TextEditingController();
-  TextEditingController qualificationController = TextEditingController();
-  TextEditingController experienceController = TextEditingController();
-  TextEditingController specialityController = TextEditingController();
-  TextEditingController aboutController = TextEditingController();
-  bool editing = false;
+  List<Map<String, dynamic>> customFields = [];
+
   @override
   void initState() {
     super.initState();
@@ -38,14 +32,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final teacherDataProvider = Provider.of<TeacherDataProvider>(context);
-    teacherData = teacherDataProvider.teacherData;
-    fullNameController.text = teacherData?.fullName ?? "";
-    phoneController.text = teacherData?.phone ?? "";
-    qualificationController.text = teacherData?.qualification ?? "";
-    experienceController.text = teacherData?.experience ?? "";
-    specialityController.text = teacherData?.speciality ?? "";
-    aboutController.text = teacherData?.about ?? "";
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
@@ -89,14 +75,17 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
           )
         ],
       ),
-      body: teacherData == null
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  if (!editing)
+      body: Center(
+        child: Consumer<TeacherDataProvider>(
+          builder: (context, teacherDataProvider, child) {
+            if (teacherDataProvider.teacherData == null) {
+              return CircularProgressIndicator();
+            } else {
+              Teacher teacherData = teacherDataProvider.teacherData!;
+              customFields = teacherData.customFields ?? [];
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: Column(
@@ -111,26 +100,26 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                           AvatarImage(
                             height: 100,
                             width: 100,
-                            teacherData!.image ??
+                            teacherData.image ??
                                 teachers[0]['image'].toString(),
                             radius: 40,
                           ),
                           SizedBox(
                             height: 15,
                           ),
-                          Text(teacherData!.fullName,
+                          Text(teacherData.fullName,
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.w700)),
                           SizedBox(
                             height: 4,
                           ),
                           Text(
-                            teacherData!.about,
+                            teacherData.about,
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.grey, fontSize: 14),
                           ),
                           SizedBox(
-                            height: 25,
+                            height: 20,
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -178,6 +167,25 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                           SizedBox(
                             height: 25,
                           ),
+                          for (int i = 0; i < customFields.length; i++)
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    customFields[i]['heading'],
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(customFields[i]['value'],
+                                      style: TextStyle(
+                                          color: Colors.grey, fontSize: 14)),
+                                  SizedBox(height: 10),
+                                ],
+                              ),
+                            ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
@@ -188,7 +196,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                                 color: Colors.blue,
                               ),
                               TeacherInfoBox(
-                                value: teacherData!.experience,
+                                value: teacherData.experience,
                                 info: "Experience",
                                 icon: Icons.medical_services_rounded,
                                 color: Colors.purple,
@@ -202,7 +210,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               TeacherInfoBox(
-                                value: teacherData!.qualification,
+                                value: teacherData.qualification,
                                 info: "Qualification",
                                 icon: Icons.card_membership_rounded,
                                 color: Colors.orange,
@@ -224,230 +232,24 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                                 bgColor: primaryColor,
                                 title: "Edit Profile",
                                 onTap: () {
-                                  setState(() {
-                                    editing = true;
-                                  });
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (builder) =>
+                                              TeacherEditProfileScreen(
+                                                  teacherData: teacherData)));
                                 }),
                           ),
                         ],
                       ),
                     ),
-                  if (editing)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Align(
-                          alignment: Alignment.topLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15.0, vertical: 8),
-                            child: Text(
-                              "Personal Info",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 17),
-                            ),
-                          ),
-                        ),
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              textField(
-                                  controller: fullNameController,
-                                  keyBordType: TextInputType.name,
-                                  hintTxt: 'Full Name',
-                                  icon: Icons.person,
-                                  isEnabled: editing,
-                                  validator: validateRequired),
-                              textField(
-                                  controller: phoneController,
-                                  keyBordType: TextInputType.phone,
-                                  hintTxt: 'Phone Number',
-                                  icon: Icons.phone,
-                                  isEnabled: editing,
-                                  validator: validateRequired),
-                              textField(
-                                  controller: qualificationController,
-                                  icon: Icons.school,
-                                  hintTxt: 'Qualification',
-                                  isEnabled: editing,
-                                  validator: validateRequired),
-                              textField(
-                                  controller: experienceController,
-                                  icon: CupertinoIcons.star_circle_fill,
-                                  hintTxt: 'Experience',
-                                  isEnabled: editing,
-                                  validator: validateRequired),
-                              textField(
-                                  controller: specialityController,
-                                  icon: CupertinoIcons.book_fill,
-                                  hintTxt: 'Teaching Speciality',
-                                  isEnabled: editing,
-                                  validator: validateRequired),
-                              textField(
-                                  controller: aboutController,
-                                  icon: CupertinoIcons.info_circle_fill,
-                                  hintTxt: 'About',
-                                  isEnabled: editing,
-                                  validator: validateRequired),
-                              // Padding(
-                              //     padding: const EdgeInsets.symmetric(
-                              //       horizontal: 20.0,
-                              //       vertical: 8.0,
-                              //     ),
-                              //     child: TextFormField(
-                              //       maxLines: maxLines,
-                              //       onChanged: (text) {
-                              //         int newMaxLines = (text.length / 40)
-                              //             .ceil(); // 40 is an approximate character count per line
-                              //         setState(() {
-                              //           maxLines = newMaxLines;
-                              //         });
-                              //       },
-                              //       controller: aboutController,
-                              //       validator: validateRequired,
-                              //       enabled: editing,
-                              //       decoration: InputDecoration(
-                              //           labelText: "About",
-                              //           labelStyle: TextStyle(
-                              //             color: primaryColor,
-                              //           ),
-                              //           enabledBorder: OutlineInputBorder(
-                              //             borderRadius:
-                              //                 BorderRadius.circular(10.0),
-                              //             borderSide: BorderSide(
-                              //               color: primaryColor,
-                              //             ),
-                              //           ),
-                              //           focusedBorder: OutlineInputBorder(
-                              //             borderRadius:
-                              //                 BorderRadius.circular(15.0),
-                              //             borderSide: BorderSide(
-                              //               color: primaryColor,
-                              //             ),
-                              //           ),
-                              //           suffixIcon: Icon(
-                              //             Icons.info,
-                              //             color: editing
-                              //                 ? primaryColor
-                              //                 : Colors.grey,
-                              //           )),
-                              //       cursorColor: primaryColor,
-                              //     ))
-                            ],
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              editing = false;
-                            });
-                          },
-                          child: Text("Cancel"),
-                        ),
-                        if (editing)
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                updateTeacherProfile();
-                              }
-                            },
-                            child: Text("Update"),
-                          ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
+      ),
     );
   }
-
-  void updateTeacherProfile() {
-    final updatedFullName = fullNameController.text;
-    final updatedPhone = phoneController.text;
-    final updatedQualification = qualificationController.text;
-    final updatedExperience = experienceController.text;
-    final updatedSpeciality = specialityController.text;
-    final updatedAbout = aboutController.text;
-
-    // Get updated values for other fields similarly.
-
-    String docId = FirebaseAuth.instance.currentUser?.uid ?? "";
-    final teacherRef =
-        FirebaseFirestore.instance.collection('teacher').doc(docId);
-
-    teacherRef.update({
-      'fullName': updatedFullName,
-      'about': updatedAbout,
-      'experience': updatedExperience,
-      'qualification': updatedQualification,
-      'speciality': updatedSpeciality,
-      'phoneNumber': updatedPhone
-    }).then((_) async {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Profile updated successfully")),
-      );
-      setState(() {
-        editing = false;
-      });
-      final teacherDataProvider =
-          Provider.of<TeacherDataProvider>(context, listen: false);
-      await teacherDataProvider.refreshTeacherData();
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to update profile: $error")),
-      );
-    });
-  }
-
-  String? validateRequired(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'This field is required';
-    }
-    return null;
-  }
-}
-
-Widget textField({
-  required String hintTxt,
-  required TextEditingController controller,
-  bool isEnabled = true,
-  IconData? icon,
-  String? Function(String?)? validator,
-  TextInputType? keyBordType,
-}) {
-  return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20.0,
-        vertical: 8.0,
-      ),
-      child: TextFormField(
-        controller: controller,
-        validator: validator,
-        enabled: isEnabled,
-        keyboardType: keyBordType,
-        decoration: InputDecoration(
-            labelText: hintTxt,
-            labelStyle: TextStyle(
-              color: primaryColor,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10.0),
-              borderSide: BorderSide(
-                color: primaryColor,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15.0),
-              borderSide: BorderSide(
-                color: primaryColor,
-              ),
-            ),
-            suffixIcon: Icon(
-              icon,
-              color: isEnabled ? primaryColor : Colors.grey,
-            )),
-        cursorColor: primaryColor,
-      ));
 }

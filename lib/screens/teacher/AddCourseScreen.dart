@@ -6,13 +6,17 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tutor_connect_app/screens/teacher/TeacherHome.dart';
+import 'package:tutor_connect_app/widget/ConfirmationDialog.dart';
 import 'package:tutor_connect_app/widget/mybutton.dart';
 
 import '../../core/colors.dart';
+import '../../utils/Course.dart';
 import '../../widget/avatar_image.dart';
 
 class AddCourseScreen extends StatefulWidget {
-  const AddCourseScreen({super.key});
+  Course? course;
+  AddCourseScreen({super.key, this.course});
 
   @override
   State<AddCourseScreen> createState() => _AddCourseScreenState();
@@ -25,8 +29,34 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   TextEditingController courseObjectiveController = TextEditingController();
   TextEditingController courseFeeController = TextEditingController();
   TextEditingController courseDurationController = TextEditingController();
+  List<TextEditingController> customFieldHeadingControllers = [];
+  List<TextEditingController> customFieldValueControllers = [];
   XFile? _imageFile;
   bool isLoading = false;
+  @override
+  void initState() {
+    final course = widget.course;
+    if (course != null) {
+      courseNameController.text = course.courseName;
+      courseDescriptionController.text = course.courseDesc;
+      courseObjectiveController.text = course.courseObj;
+      courseFeeController.text = course.courseFee;
+      courseDurationController.text = course.courseDuration;
+      customFieldHeadingControllers =
+          List.generate(course.customFields?.length ?? 0, (index) {
+        return TextEditingController(
+          text: course.customFields?[index]['heading'] ?? "",
+        );
+      });
+      customFieldValueControllers =
+          List.generate(course.customFields?.length ?? 0, (index) {
+        return TextEditingController(
+          text: course.customFields?[index]['value'] ?? "",
+        );
+      });
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +64,31 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
       children: [
         Scaffold(
           appBar: AppBar(
-            title: Text("Add Course"),
+            title: widget.course == null
+                ? Text("Add Course")
+                : Text("Update Course"),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ConfirmationDialog(
+                        title: "Are You Sure?",
+                        message: "Do you want to delete this course?",
+                        onConfirm: () {
+                          deleteCourse();
+                        },
+                      );
+                    },
+                  );
+                },
+                icon: Icon(
+                  Icons.delete,
+                ),
+                tooltip: "Delete Course",
+              )
+            ],
           ),
           body: SingleChildScrollView(
             child: Column(
@@ -53,7 +107,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                           validator: validateRequired),
                       textField(
                           controller: courseDescriptionController,
-                          keyBordType: TextInputType.phone,
+                          keyBordType: TextInputType.text,
                           hintTxt: 'Description',
                           icon: CupertinoIcons.line_horizontal_3,
                           validator: validateRequired),
@@ -69,39 +123,96 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                           validator: validateRequired),
                       textField(
                           controller: courseFeeController,
+                          keyBordType: TextInputType.number,
                           icon: CupertinoIcons.money_dollar,
                           hintTxt: 'Course Fee',
                           validator: validateRequired),
-                      _imageFile != null
-                          ? Center(
-                              child: AvatarImage(
-                                _imageFile!.path,
-                                isFileImage: true,
-                                width: 300,
-                                height: 150,
-                                radius: 10,
-                              ),
-                            )
-                          : Container(),
+                      for (int i = 0;
+                          i < customFieldHeadingControllers.length;
+                          i++)
+                        Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: textField(
+                                    padding: EdgeInsets.fromLTRB(20, 8, 1, 8),
+                                    controller:
+                                        customFieldHeadingControllers[i],
+                                    icon: Icons.text_fields,
+                                    hintTxt: 'Custom Field Heading ${i + 1}',
+                                    validator: validateRequired,
+                                  ),
+                                ),
+                                IconButton(
+                                  padding: EdgeInsets.only(right: 8),
+                                  icon: Icon(Icons.close),
+                                  onPressed: () {
+                                    setState(() {
+                                      customFieldHeadingControllers.removeAt(i);
+                                      customFieldValueControllers.removeAt(i);
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            textField(
+                              controller: customFieldValueControllers[i],
+                              icon: Icons.abc,
+                              hintTxt: 'Custom Field Value ${i + 1}',
+                              validator: validateRequired,
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
-                ElevatedButton(
-                    onPressed: () async {
-                      final ImagePicker _picker = ImagePicker();
-                      _imageFile =
-                          await _picker.pickImage(source: ImageSource.gallery);
-                      setState(() {});
-                    },
-                    child: Text('Upload Course Image')),
+                SizedBox(height: 10),
+                MyButton(
+                  onTap: () {
+                    customFieldHeadingControllers.add(TextEditingController());
+                    customFieldValueControllers.add(TextEditingController());
+                    setState(() {});
+                  },
+                  title: "Add Another Field",
+                ),
+                _imageFile != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 15.0),
+                        child: Center(
+                          child: AvatarImage(
+                            _imageFile!.path,
+                            isFileImage: true,
+                            width: 300,
+                            height: 150,
+                            radius: 10,
+                          ),
+                        ),
+                      )
+                    : Container(),
+                SizedBox(height: 10),
+                widget.course == null
+                    ? MyButton(
+                        onTap: () async {
+                          final ImagePicker _picker = ImagePicker();
+                          _imageFile = await _picker.pickImage(
+                              source: ImageSource.gallery);
+                          setState(() {});
+                        },
+                        title: 'Upload Course Image')
+                    : SizedBox(),
+                SizedBox(height: 15),
                 MyButton(
                   onTap: () {
                     if (_formKey.currentState!.validate()) {
                       addCourse();
                     }
                   },
-                  title: "Add Course",
+                  title: widget.course == null ? "Add Course" : "Update Course",
                 ),
+                SizedBox(
+                  height: 20,
+                )
               ],
             ),
           ),
@@ -116,6 +227,56 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           ),
       ],
     );
+  }
+
+  void deleteCourse() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final userDocRef = FirebaseFirestore.instance
+          .collection('courses')
+          .doc(FirebaseAuth.instance.currentUser!.uid);
+
+      // Get the existing list of courses
+      var existingData = (await userDocRef.get()).data();
+      List<Map<String, dynamic>> existingCourses = [];
+
+      if (existingData != null && existingData['courses'] != null) {
+        existingCourses = List.from(existingData['courses']);
+      }
+
+      bool courseExists = false;
+      int existingCourseIndex = -1;
+
+      for (int i = 0; i < existingCourses.length; i++) {
+        if (existingCourses[i]['courseName'] == widget.course?.courseName) {
+          courseExists = true;
+          existingCourseIndex = i;
+          break;
+        }
+      }
+
+      if (courseExists) {
+        // Delete the existing course
+        existingCourses.removeAt(existingCourseIndex);
+        await userDocRef.set({
+          'courses': existingCourses,
+        });
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Course Deleted")));
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (builder) => TeacherHome()),
+            (route) => false);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Error $e")));
+    }
   }
 
   void addCourse() async {
@@ -150,6 +311,16 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     String courseDuration,
     String courseImage,
   ) async {
+    List<Map<String, dynamic>> customFields = [];
+
+    for (int i = 0; i < customFieldHeadingControllers.length; i++) {
+      String heading = customFieldHeadingControllers[i].text;
+      String value = customFieldValueControllers[i].text;
+
+      if (heading.isNotEmpty || value.isNotEmpty) {
+        customFields.add({'heading': heading, 'value': value});
+      }
+    }
     try {
       final userDocRef = FirebaseFirestore.instance
           .collection('courses')
@@ -162,18 +333,41 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
       if (existingData != null && existingData['courses'] != null) {
         existingCourses = List.from(existingData['courses']);
       }
+      bool courseExists = false;
+      int existingCourseIndex = -1;
 
-      // Add the new course to the list
-      existingCourses.add({
-        'courseName': courseName,
-        'courseDesc': courseDesc,
-        'courseObj': courseObj,
-        'courseFee': courseFee,
-        'courseDuration': courseDuration,
-        'courseImage': courseImage,
-        'teacherId': FirebaseAuth.instance.currentUser!.uid
-      });
-
+      for (int i = 0; i < existingCourses.length; i++) {
+        if (existingCourses[i]['courseName'] == courseName) {
+          courseExists = true;
+          existingCourseIndex = i;
+          break;
+        }
+      }
+      if (courseExists) {
+        Map<String, dynamic> currentCourse =
+            existingCourses[existingCourseIndex];
+        existingCourses[existingCourseIndex] = {
+          'courseName': courseName,
+          'courseDesc': courseDesc,
+          'courseObj': courseObj,
+          'courseFee': courseFee,
+          'courseDuration': courseDuration,
+          'courseImage': currentCourse['courseImage'],
+          'teacherId': FirebaseAuth.instance.currentUser!.uid,
+          'customFields': customFields,
+        };
+      } else {
+        existingCourses.add({
+          'courseName': courseName,
+          'courseDesc': courseDesc,
+          'courseObj': courseObj,
+          'courseFee': courseFee,
+          'courseDuration': courseDuration,
+          'courseImage': courseImage,
+          'teacherId': FirebaseAuth.instance.currentUser!.uid,
+          'customFields': customFields,
+        });
+      }
       // Update the document with the new list of courses
       await userDocRef.set({
         'courses': existingCourses,
@@ -182,7 +376,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
       print('Course data saved to Firestore');
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Course Saved")));
-      Navigator.pop(context);
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (builder) => TeacherHome()),
+          (route) => false);
     } catch (e) {
       print('Error saving Course data to Firestore: $e');
       ScaffoldMessenger.of(context)
@@ -215,12 +412,13 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     IconData? icon,
     String? Function(String?)? validator,
     TextInputType? keyBordType,
+    padding = const EdgeInsets.symmetric(
+      horizontal: 20.0,
+      vertical: 8.0,
+    ),
   }) {
     return Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20.0,
-          vertical: 8.0,
-        ),
+        padding: padding,
         child: TextFormField(
           controller: controller,
           validator: validator,

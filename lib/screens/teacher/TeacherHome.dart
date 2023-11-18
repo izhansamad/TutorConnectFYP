@@ -1,6 +1,4 @@
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -45,49 +43,11 @@ class _TeacherHomeState extends State<TeacherHome> {
   }
 
   Future<void> loadTeacherData() async {
-    final teacherData = await getTeacherFromFirestore();
-
     final teacherDataProvider =
         Provider.of<TeacherDataProvider>(context, listen: false);
-    teacherDataProvider.setTeacherData(teacherData!);
+    teacherDataProvider.refreshTeacherData();
 
     setState(() {});
-  }
-
-  Future<Teacher?> getTeacherFromFirestore() async {
-    DocumentSnapshot? userDocument = await getCurrentUserDocument();
-
-    if (userDocument != null) {
-      // Create a Teacher object from the user document
-      return Teacher.fromDocument(userDocument);
-    } else {
-      // Handle the case when the user document is not found
-      return null;
-    }
-  }
-
-  Future<DocumentSnapshot?> getCurrentUserDocument() async {
-    try {
-      String userUid = FirebaseAuth.instance.currentUser?.uid ?? "";
-
-      // Reference to the Firestore collection where user data is stored
-      CollectionReference usersCollection =
-          FirebaseFirestore.instance.collection('teacher');
-
-      // Query for the document with the current user's UID
-      DocumentSnapshot userDoc = await usersCollection.doc(userUid).get();
-
-      if (userDoc.exists) {
-        return userDoc; // Return the user's document
-      } else {
-        // User not found, handle this case as needed (e.g., return null or an error).
-        return null; // or throw an exception
-      }
-    } catch (error) {
-      // Handle any errors that occur during the Firestore query
-      print("Error fetching user document: $error");
-      throw error;
-    }
   }
 
   @override

@@ -10,7 +10,7 @@ class MyButton extends StatelessWidget {
       this.height = 45,
       this.bgColor = primaryColor,
       this.icon,
-      this.disableButton = true,
+      this.disableButton = false,
       this.isLoading = false})
       : super(key: key);
   final GestureTapCallback onTap;
@@ -29,6 +29,7 @@ class MyButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(13),
               color: disableButton
