@@ -68,26 +68,27 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                 ? Text("Add Course")
                 : Text("Update Course"),
             actions: [
-              IconButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return ConfirmationDialog(
-                        title: "Are You Sure?",
-                        message: "Do you want to delete this course?",
-                        onConfirm: () {
-                          deleteCourse();
-                        },
-                      );
-                    },
-                  );
-                },
-                icon: Icon(
-                  Icons.delete,
-                ),
-                tooltip: "Delete Course",
-              )
+              if (widget.course != null)
+                IconButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return ConfirmationDialog(
+                          title: "Are You Sure?",
+                          message: "Do you want to delete this course?",
+                          onConfirm: () {
+                            deleteCourse();
+                          },
+                        );
+                      },
+                    );
+                  },
+                  icon: Icon(
+                    Icons.delete,
+                  ),
+                  tooltip: "Delete Course",
+                )
             ],
           ),
           body: SingleChildScrollView(

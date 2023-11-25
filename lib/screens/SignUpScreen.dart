@@ -282,8 +282,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      String imagePath =
-          'images/${fullNameController.text}-${DateTime.now()}.png';
+      String imagePath = 'images/${user.uid}/profile.png';
       Reference storageReference =
           FirebaseStorage.instance.ref().child(imagePath);
       UploadTask uploadTask = storageReference.putFile(File(imageFile.path));
