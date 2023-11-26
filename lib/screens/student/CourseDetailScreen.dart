@@ -220,6 +220,23 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   ),
                 ),
               ),
+            if (PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY))
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                child: MyButton(
+                    disableButton: false,
+                    bgColor: primaryColor,
+                    title: "Add Modules",
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (builder) => AddCourseScreen(
+                                    course: course,
+                                  )));
+                    }),
+              ),
             PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY)
                 ? Padding(
                     padding: const EdgeInsets.symmetric(

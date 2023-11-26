@@ -124,17 +124,16 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
     var userUid = FirebaseAuth.instance.currentUser!.uid;
 
     try {
-      var snapshot = await FirebaseFirestore.instance
+      var querySnapshot = await FirebaseFirestore.instance
           .collection('courses')
           .doc(userUid)
+          .collection('teacherCourses')
           .get();
 
-      if (snapshot.exists) {
-        var data = snapshot.data() as Map<String, dynamic>;
-        var courseData = data['courses'] as List<dynamic>;
-
-        courses =
-            courseData.map((courseMap) => Course.fromMap(courseMap)).toList();
+      if (querySnapshot.docs.isNotEmpty) {
+        courses = querySnapshot.docs
+            .map((doc) => Course.fromMap({...doc.data()}))
+            .toList();
 
         setState(() {
           loading = false;
@@ -157,6 +156,46 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
     }
   }
 
+  // Future<List<Course>> getTeacherCourses() async {
+  //   setState(() {
+  //     loading = true;
+  //   });
+  //
+  //   var userUid = FirebaseAuth.instance.currentUser!.uid;
+  //
+  //   try {
+  //     var snapshot = await FirebaseFirestore.instance
+  //         .collection('courses')
+  //         .doc(userUid)
+  //         .get();
+  //
+  //     if (snapshot.exists) {
+  //       var data = snapshot.data() as Map<String, dynamic>;
+  //       var courseData = data['courses'] as List<dynamic>;
+  //
+  //       courses =
+  //           courseData.map((courseMap) => Course.fromMap(courseMap)).toList();
+  //
+  //       setState(() {
+  //         loading = false;
+  //       });
+  //
+  //       return courses;
+  //     } else {
+  //       setState(() {
+  //         loading = false;
+  //       });
+  //       return [];
+  //     }
+  //   } catch (e) {
+  //     // Handle errors
+  //     setState(() {
+  //       loading = false;
+  //     });
+  //     print('Error retrieving courses: $e');
+  //     return [];
+  //   }
+  // }
   Future<List<Course>> getAllCourses() async {
     setState(() {
       loading = true;
@@ -167,14 +206,27 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
           await FirebaseFirestore.instance.collection('courses').get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        courses = querySnapshot.docs
-            .expand((doc) => (doc.data()!['courses'] as List<dynamic>)
-                .map((courseMap) => Course.fromMap(courseMap)))
-            .toList();
+        for (var teacherDoc in querySnapshot.docs) {
+          var teacherUid = teacherDoc.id;
 
-        setState(() {
-          loading = false;
-        });
+          var teacherCoursesQuery = await FirebaseFirestore.instance
+              .collection('courses')
+              .doc(teacherUid)
+              .collection('teacherCourses')
+              .get();
+
+          if (teacherCoursesQuery.docs.isNotEmpty) {
+            var teacherCourses = teacherCoursesQuery.docs
+                .map((courseDoc) => Course.fromMap({...courseDoc.data()}))
+                .toList();
+
+            courses.addAll(teacherCourses);
+            print(teacherCourses);
+          }
+        }
+
+        loading = false;
+        setState(() {});
 
         return courses;
       } else {
@@ -189,8 +241,45 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
       setState(() {
         loading = false;
       });
-      print('Error retrieving courses: $e');
+      print('Error retrieving teachers and courses: $e');
       return [];
     }
   }
+
+  // Future<List<Course>> getAllCourses() async {
+  //   setState(() {
+  //     loading = true;
+  //   });
+  //
+  //   try {
+  //     var querySnapshot =
+  //         await FirebaseFirestore.instance.collection('courses').get();
+  //
+  //     if (querySnapshot.docs.isNotEmpty) {
+  //       courses = querySnapshot.docs
+  //           .expand((doc) => (doc.data()!['courses'] as List<dynamic>)
+  //               .map((courseMap) => Course.fromMap(courseMap)))
+  //           .toList();
+  //
+  //       setState(() {
+  //         loading = false;
+  //       });
+  //
+  //       return courses;
+  //     } else {
+  //       setState(() {
+  //         loading = false;
+  //       });
+  //       // If no documents or courses are found, return an empty list
+  //       return [];
+  //     }
+  //   } catch (e) {
+  //     // Handle errors
+  //     setState(() {
+  //       loading = false;
+  //     });
+  //     print('Error retrieving courses: $e');
+  //     return [];
+  //   }
+  // }
 }
