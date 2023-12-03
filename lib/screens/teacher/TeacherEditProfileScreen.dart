@@ -260,6 +260,7 @@ Widget textField({
       controller: controller,
       validator: validator,
       enabled: isEnabled,
+      maxLines: null,
       keyboardType: keyBordType,
       decoration: InputDecoration(
         labelText: hintTxt,

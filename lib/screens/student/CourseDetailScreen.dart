@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tutor_connect_app/screens/teacher/AddCourseScreen.dart';
+import 'package:tutor_connect_app/screens/teacher/AddModulesScreen.dart';
 import 'package:tutor_connect_app/utils/PrefsManager.dart';
 
 import '../../core/colors.dart';
@@ -23,10 +24,48 @@ class CourseDetailScreen extends StatefulWidget {
 class _CourseDetailScreenState extends State<CourseDetailScreen> {
   Teacher? teacherData;
   List<Map<String, dynamic>> customFields = [];
+  List<Module> modules = [];
   @override
   void initState() {
     getTeacherInfo(widget.course.teacherId);
+    getModules();
     super.initState();
+  }
+
+  void getModules() async {
+    try {
+      final modulesCollection = FirebaseFirestore.instance
+          .collection('courses')
+          .doc(widget.course.teacherId)
+          .collection("teacherCourses")
+          .doc(widget.course.courseId)
+          .collection('modules');
+
+      QuerySnapshot querySnapshot = await modulesCollection.get();
+
+      modules = querySnapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        return Module(
+          // Map the fields according to your Module class structure
+          moduleId: data['moduleId'],
+          moduleName: data['moduleName'],
+          moduleDescription: data['moduleDescription'],
+          materials: (data['materials'] as List<dynamic>).map((material) {
+            // Map the fields according to your CourseMaterial class structure
+            return CourseMaterial(
+              materialType: material['materialType'],
+              materialUrl: material['materialUrl'],
+              materialOrder: material['materialOrder'],
+            );
+          }).toList(),
+        );
+      }).toList();
+      print("Modules: $modules");
+      setState(() {});
+    } catch (e) {
+      print('Error getting modules data from Firestore: $e');
+      // Handle error as needed
+    }
   }
 
   void getTeacherInfo(String teacherDocId) async {
@@ -220,10 +259,49 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   ),
                 ),
               ),
+            if (PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY) &&
+                (modules.isNotEmpty))
+              // Inside your CourseDetailScreen
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text("Modules",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                  Column(
+                    children: modules.map((module) {
+                      return GestureDetector(
+                        onTap: () {
+                          // Navigate to the AddModulesScreen with the selected module for editing
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (builder) => AddModulesScreen(
+                                course: course,
+                                module: module,
+                              ),
+                            ),
+                          );
+                        },
+                        child: ListTile(
+                          title: Text(module.moduleName),
+                          subtitle: Text(module.moduleDescription),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             if (PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY))
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 child: MyButton(
                     disableButton: false,
                     bgColor: primaryColor,
@@ -232,7 +310,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (builder) => AddCourseScreen(
+                              builder: (builder) => AddModulesScreen(
                                     course: course,
                                   )));
                     }),
@@ -240,7 +318,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY)
                 ? Padding(
                     padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 20),
+                        vertical: 10, horizontal: 20),
                     child: MyButton(
                         disableButton: false,
                         bgColor: primaryColor,

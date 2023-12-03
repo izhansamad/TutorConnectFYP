@@ -52,43 +52,61 @@ class Course {
 }
 
 class Module {
+  final String? moduleId;
   final String moduleName;
   final String moduleDescription;
-  List<Material>? materials;
+  List<CourseMaterial>? materials;
 
   Module({
+    this.moduleId,
     required this.moduleName,
     required this.moduleDescription,
     this.materials,
   });
+  Map<String, dynamic> toMap() {
+    return {
+      'moduleId': moduleId,
+      'moduleName': moduleName,
+      'moduleDescription': moduleDescription,
+      'materials': materials?.map((material) => material.toMap()).toList(),
+    };
+  }
 
   factory Module.fromMap(Map<String, dynamic> map) {
     return Module(
+      moduleId: map['moduleId'],
       moduleName: map['moduleName'],
       moduleDescription: map['moduleDescription'],
       materials: (map['materials'] as List<dynamic>?)
-          ?.map((materialMap) => Material.fromMap(materialMap))
+          ?.map((materialMap) => CourseMaterial.fromMap(materialMap))
           .toList(),
     );
   }
 }
 
-class Material {
+class CourseMaterial {
   final String materialType;
   final String materialUrl;
   final int materialOrder;
 
-  Material({
+  CourseMaterial({
     required this.materialType,
     required this.materialUrl,
     required this.materialOrder,
   });
 
-  factory Material.fromMap(Map<String, dynamic> map) {
-    return Material(
+  factory CourseMaterial.fromMap(Map<String, dynamic> map) {
+    return CourseMaterial(
       materialType: map['materialType'],
       materialUrl: map['materialUrl'],
       materialOrder: map['materialOrder'],
     );
+  }
+  Map<String, dynamic> toMap() {
+    return {
+      'materialType': materialType,
+      'materialUrl': materialUrl,
+      'materialOrder': materialOrder,
+    };
   }
 }
