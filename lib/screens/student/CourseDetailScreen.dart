@@ -56,6 +56,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               materialType: material['materialType'],
               materialUrl: material['materialUrl'],
               materialOrder: material['materialOrder'],
+              materialName: material['materialName'] ?? "",
             );
           }).toList(),
         );

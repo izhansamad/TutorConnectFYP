@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherEditProfileScreen.dart';
+import 'package:tutor_connect_app/screens/teacher/TeacherHome.dart';
 
 import '../../utils/Course.dart';
 
@@ -19,11 +20,21 @@ class AddModulesScreen extends StatefulWidget {
   _AddModulesScreenState createState() => _AddModulesScreenState();
 }
 
+class CustomFile {
+  final String name;
+  final File file;
+  final String type;
+
+  CustomFile({required this.name, required this.file, this.type = ""});
+}
+
 class _AddModulesScreenState extends State<AddModulesScreen> {
-  List<File> selectedFiles = [];
+  List<CustomFile> selectedFiles = [];
+  List<String> deletedMaterial = [];
 
   TextEditingController moduleNameController = TextEditingController();
   TextEditingController moduleDescriptionController = TextEditingController();
+  TextEditingController materialNameController = TextEditingController();
 
   @override
   void initState() {
@@ -38,7 +49,39 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Add Modules"),
+        title:
+            widget.module != null ? Text("Update Module") : Text("Add Module"),
+        actions: [
+          if (widget.module != null)
+            IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Are you sure'),
+                        content: Text('You want to delete this module?'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('Cancel'),
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                          ),
+                          TextButton(
+                            child: Text('Delete'),
+                            onPressed: () {
+                              deleteModule();
+                              Navigator.of(context).pop(); // Close the dialog
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                icon: Icon(Icons.delete))
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -51,6 +94,21 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
             textField(
               controller: moduleDescriptionController,
               hintTxt: "Module Description",
+              validator: validateRequired,
+            ),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Text("Add Materials",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+              ),
+            ),
+            textField(
+              controller: materialNameController,
+              hintTxt: "Material Name",
               validator: validateRequired,
             ),
             Row(
@@ -71,15 +129,65 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
                 ),
               ],
             ),
-            if (widget.module != null)
+            if (widget.module?.materials?.isNotEmpty ?? false)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Existing Materials:"),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18.0, vertical: 10),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text("Existing Materials",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
                   for (CourseMaterial material
                       in widget.module?.materials ?? [])
                     ListTile(
-                      title: Text(material.materialUrl.split('/').last),
+                      leading: material.materialType == "pdf"
+                          ? Icon(Icons.picture_as_pdf)
+                          : Icon(Icons.video_camera_back),
+                      title: Text(material.materialName),
+                      trailing: IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Are you sure'),
+                                content:
+                                    Text('You want to delete this material?'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: Text('Cancel'),
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .pop(); // Close the dialog
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Text('Delete'),
+                                    onPressed: () {
+                                      deletedMaterial.add(material.materialUrl);
+                                      widget.module?.materials?.removeWhere(
+                                        (item) =>
+                                            item.materialUrl ==
+                                            material.materialUrl,
+                                      );
+                                      setState(() {});
+                                      Navigator.of(context)
+                                          .pop(); // Close the dialog
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
                 ],
               ),
@@ -87,13 +195,32 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Selected Files:"),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18.0, vertical: 10),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text("Selected Materials",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
                   ListView.builder(
                     shrinkWrap: true,
                     itemCount: selectedFiles.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        title: Text(selectedFiles[index].path.split('/').last),
+                        leading: selectedFiles[index].type == "pdf"
+                            ? Icon(Icons.picture_as_pdf)
+                            : Icon(Icons.video_camera_back),
+                        title: Text(selectedFiles[index].name),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            selectedFiles.removeAt(index);
+                            setState(() {});
+                          },
+                        ),
                       );
                     },
                   ),
@@ -112,6 +239,11 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
   }
 
   Future<void> pickAndUploadFile(String fileType) async {
+    if (materialNameController.text == "") {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Enter Material Name")));
+      return;
+    }
     FilePickerResult? result;
     if (fileType == 'video') {
       result = await FilePicker.platform.pickFiles(type: FileType.video);
@@ -119,10 +251,15 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
       result = await FilePicker.platform
           .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
     }
+
     if (result != null) {
-      setState(() {
-        selectedFiles.add(File(result?.files.single.path ?? ""));
-      });
+      selectedFiles.add(CustomFile(
+          name: materialNameController.text,
+          type: fileType,
+          file: File(result.files.single.path ?? "")));
+      materialNameController.clear();
+      // selectedFiles.add(File(result?.files.single.path ?? ""));
+      setState(() {});
     }
   }
 
@@ -142,10 +279,10 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
     } else {
       await addCourseModules(newModule);
     }
-
     setState(() {
       selectedFiles = [];
     });
+    moveToHome();
 
     print("Module saved!");
   }
@@ -171,6 +308,11 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
 
   Future<void> updateCourseModule(String moduleId, Module updatedModule) async {
     try {
+      if (deletedMaterial.isNotEmpty) {
+        for (var url in deletedMaterial) {
+          deleteMaterialFromStorage(url);
+        }
+      }
       final teacherUid = FirebaseAuth.instance.currentUser!.uid;
       final modulesCollection = FirebaseFirestore.instance
           .collection('courses')
@@ -183,7 +325,15 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
       final moduleDocRef = modulesCollection.doc(moduleId);
 
       // Update the module document with the new data
-      await moduleDocRef.update(updatedModule.toMap());
+      // await moduleDocRef.update(updatedModule.toMap());
+      Map<Object, Object?> data = {
+        'moduleName': updatedModule.moduleName,
+        'moduleDescription': updatedModule.moduleDescription,
+        'materials': updatedModule.materials
+            ?.map((material) => material.toMap())
+            .toList(),
+      };
+      await moduleDocRef.update(data);
 
       print('Module updated with ID: $moduleId');
     } catch (e) {
@@ -197,19 +347,19 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
 
     List<CourseMaterial> materials = [];
 
-    for (File file in selectedFiles) {
+    for (var selectedFile in selectedFiles) {
       try {
         Reference ref = storage.ref().child(
-            'courseMaterial/${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}');
-
-        await ref.putFile(file);
+            'courseMaterial/${DateTime.now().millisecondsSinceEpoch}_${selectedFile.file.path.split('/').last}');
+        await ref.putFile(selectedFile.file);
         String downloadUrl = await ref.getDownloadURL();
 
         // Create CourseMaterial instance with Firebase Storage URL
         CourseMaterial material = CourseMaterial(
-          materialType: getFileType(file),
+          materialType: getFileType(selectedFile.file),
           materialUrl: downloadUrl,
           materialOrder: materials.length + 1, // Incremental order
+          materialName: selectedFile.name,
         );
 
         materials.add(material);
@@ -233,6 +383,73 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
     } else {
       return 'unknown';
     }
+  }
+
+  void deleteMaterialFromStorage(String materialUrl) async {
+    try {
+      Reference materialRef = FirebaseStorage.instance.refFromURL(materialUrl);
+      await materialRef.delete();
+      setState(() {});
+      print('Material deleted successfully.');
+    } catch (e) {
+      print('Error deleting material: $e');
+      // Handle error as needed
+    }
+  }
+
+  Future<void> deleteModule() async {
+    try {
+      final teacherUid = FirebaseAuth.instance.currentUser!.uid;
+      final modulesCollection = FirebaseFirestore.instance
+          .collection('courses')
+          .doc(teacherUid)
+          .collection("teacherCourses")
+          .doc(widget.course.courseId)
+          .collection('modules');
+
+      // Reference to the specific module document
+      final moduleDocRef = modulesCollection.doc(widget.module?.moduleId);
+
+      // Get the module data to retrieve the list of materials
+      DocumentSnapshot<Map<String, dynamic>> moduleSnapshot =
+          await moduleDocRef.get();
+      Map<String, dynamic>? moduleData = moduleSnapshot.data();
+
+      if (moduleData != null) {
+        // Delete the module document from Firestore
+        await moduleDocRef.delete();
+
+        // Retrieve the list of materials
+        List<Map<String, dynamic>>? materials =
+            (moduleData['materials'] as List<dynamic>?)
+                ?.cast<Map<String, dynamic>>();
+
+        if (materials != null) {
+          // Delete each material from Firebase Storage
+          for (Map<String, dynamic> materialData in materials) {
+            String materialUrl = materialData['materialUrl'];
+            Reference materialRef =
+                FirebaseStorage.instance.refFromURL(materialUrl);
+            await materialRef.delete();
+            print('Material deleted from Storage: $materialUrl');
+          }
+        }
+        moveToHome();
+        print('Module and associated materials deleted successfully.');
+      } else {
+        print('Module not found.');
+      }
+    } catch (e) {
+      print('Error deleting module and materials: $e');
+      // Handle error as needed
+    }
+  }
+
+  moveToHome() {
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (builder) => TeacherHome()),
+        (route) => false);
   }
 
   String? validateRequired(String? value) {

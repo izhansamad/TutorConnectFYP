@@ -88,11 +88,13 @@ class CourseMaterial {
   final String materialType;
   final String materialUrl;
   final int materialOrder;
+  final String materialName;
 
   CourseMaterial({
     required this.materialType,
     required this.materialUrl,
     required this.materialOrder,
+    required this.materialName,
   });
 
   factory CourseMaterial.fromMap(Map<String, dynamic> map) {
@@ -100,6 +102,7 @@ class CourseMaterial {
       materialType: map['materialType'],
       materialUrl: map['materialUrl'],
       materialOrder: map['materialOrder'],
+      materialName: map['materialName'],
     );
   }
   Map<String, dynamic> toMap() {
@@ -107,6 +110,7 @@ class CourseMaterial {
       'materialType': materialType,
       'materialUrl': materialUrl,
       'materialOrder': materialOrder,
+      'materialName': materialName,
     };
   }
 }
