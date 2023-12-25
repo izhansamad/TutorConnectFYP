@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:tutor_connect_app/screens/SignUpScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherHome.dart';
@@ -208,8 +209,17 @@ class _LoginScreenState extends State<LoginScreen> {
           await teachersCollection.where('email', isEqualTo: userEmail).get();
 
       if (studentsQuerySnapshot.docs.isNotEmpty) {
+        String? pushToken = await FirebaseMessaging.instance.getToken();
+        await studentsCollection
+            .doc(FirebaseAuth.instance.currentUser?.uid)
+            .update({'pushToken': pushToken});
+
         return "student";
       } else if (teachersQuerySnapshot.docs.isNotEmpty) {
+        String? pushToken = await FirebaseMessaging.instance.getToken();
+        await teachersCollection
+            .doc(FirebaseAuth.instance.currentUser?.uid)
+            .update({'pushToken': pushToken});
         return "teacher";
       } else {
         // User not found in either collection, handle this case as needed (e.g., return a default user type or an error).

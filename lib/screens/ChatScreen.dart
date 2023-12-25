@@ -1,7 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tutor_connect_app/utils/PrefsManager.dart';
 import 'package:tutor_connect_app/widget/searchBar.dart';
 
-import '../data/json.dart';
+import '../utils/chat_provider.dart';
 import '../widget/chat_item.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -12,6 +16,22 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  late final ChatProvider chatProvider = context.read<ChatProvider>();
+  late final String currentUserId;
+  bool isTeacher = false;
+
+  @override
+  void initState() {
+    isTeacher = PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY);
+    currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    if (PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY)) {
+      chatProvider.getTeachersConvoList(currentUserId);
+    } else {
+      chatProvider.getStudentsConvoList(currentUserId);
+    }
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,21 +58,70 @@ class _ChatScreenState extends State<ChatScreen> {
 
   getBody() {
     return SingleChildScrollView(
-        child: Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              CustomSearch(),
-              SizedBox(
-                height: 20,
-              ),
-              getChatList()
-            ])));
-  }
-
-  getChatList() {
-    return Column(
-        children: List.generate(
-            chatsData.length, (index) => ChatItem(chatsData[index])));
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CustomSearch(),
+            SizedBox(height: 20),
+            FutureBuilder<List<QueryDocumentSnapshot>>(
+              future: isTeacher
+                  ? chatProvider.getTeachersConvoList(currentUserId)
+                  : chatProvider.getStudentsConvoList(currentUserId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  List<QueryDocumentSnapshot> conversations =
+                      snapshot.data ?? [];
+                  return conversations.isNotEmpty
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: conversations.length,
+                          itemBuilder: (context, index) {
+                            var conversation = conversations[index];
+                            var lastMessage =
+                                conversation['messages'].last['content'];
+                            var timestamp =
+                                conversation['messages'].last['timestamp'];
+                            var participants = conversation['participants'];
+                            var peerId = isTeacher
+                                ? participants['studentId']
+                                : participants['teacherId'];
+                            var peerAvatar = isTeacher
+                                ? participants['studentImage']
+                                : participants['teacherImage'];
+                            var peerNickname = isTeacher
+                                ? participants['studentName']
+                                : participants[
+                                    'teacherName']; // Get the peer's nickname
+                            return ChatItem(
+                              peerId: peerId,
+                              peerAvatar: peerAvatar,
+                              peerName: peerNickname,
+                              lastMessage: lastMessage,
+                              timestamp: timestamp,
+                            );
+                          },
+                        )
+                      : Center(
+                          child: Text("No chats available"),
+                        );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
+
+// getChatList() {
+//   return Column(
+//       children: List.generate(
+//           chatsData.length, (index) => ChatItem(chatsData[index])));
+// }

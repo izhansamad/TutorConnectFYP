@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +6,7 @@ import 'package:tutor_connect_app/screens/SpashScreen.dart';
 import 'package:tutor_connect_app/utils/PrefsManager.dart';
 import 'package:tutor_connect_app/utils/Student.dart';
 import 'package:tutor_connect_app/utils/Teacher.dart';
+import 'package:tutor_connect_app/utils/chat_provider.dart';
 import 'package:tutor_connect_app/utils/size_confige.dart';
 
 import 'firebase_options.dart';
@@ -28,6 +30,11 @@ void main() async {
         ChangeNotifierProvider(create: (context) => StudentDataProvider()),
         ChangeNotifierProvider(create: (context) => TeacherDataProvider()),
         ChangeNotifierProvider(create: (context) => AllTeachersDataProvider()),
+        Provider<ChatProvider>(
+          create: (_) => ChatProvider(
+            firebaseFirestore: FirebaseFirestore.instance,
+          ),
+        ),
       ],
       child: MyApp(),
     ),

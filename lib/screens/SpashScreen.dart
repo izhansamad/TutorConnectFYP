@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:tutor_connect_app/core/colors.dart';
 import 'package:tutor_connect_app/screens/LoginScreen.dart';
@@ -35,6 +36,20 @@ class _SplashScreenState extends State<SplashScreen> {
                   MaterialPageRoute(builder: (builder) => Home()));
     });
   }
+
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+
+  // void registerNotification() {
+  //   firebaseMessaging.requestPermission();
+  //
+  //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //     print('onMessage: $message');
+  //     if (message.notification != null) {
+  //       showNotification(message.notification!);
+  //     }
+  //     return;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

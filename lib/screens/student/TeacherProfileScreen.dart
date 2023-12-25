@@ -1,6 +1,7 @@
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:tutor_connect_app/screens/chat_page.dart';
 
 import '../../core/colors.dart';
 import '../../data/json.dart';
@@ -152,9 +153,21 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 icon: Icons.call_end,
                 color: Colors.green,
               ),
-              ContactBox(
-                icon: Icons.chat_rounded,
-                color: Colors.purple,
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (builder) => ChatPage(
+                              arguments: ChatPageArguments(
+                                  peerAvatar: teacher.image ?? "",
+                                  peerId: teacher.id,
+                                  peerName: teacher.fullName))));
+                },
+                child: ContactBox(
+                  icon: Icons.chat_rounded,
+                  color: Colors.purple,
+                ),
               ),
             ],
           ),

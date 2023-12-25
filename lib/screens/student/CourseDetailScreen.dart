@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:tutor_connect_app/screens/student/ShowModuleDetails.dart';
 import 'package:tutor_connect_app/screens/teacher/AddCourseScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/AddModulesScreen.dart';
 import 'package:tutor_connect_app/utils/PrefsManager.dart';
@@ -23,12 +25,15 @@ class CourseDetailScreen extends StatefulWidget {
 
 class _CourseDetailScreenState extends State<CourseDetailScreen> {
   Teacher? teacherData;
+  bool isEnrolled = false;
   List<Map<String, dynamic>> customFields = [];
   List<Module> modules = [];
   @override
   void initState() {
     getTeacherInfo(widget.course.teacherId);
     getModules();
+    checkEnrollmentAndShowModules(
+        FirebaseAuth.instance.currentUser?.uid ?? "", widget.course.courseId);
     super.initState();
   }
 
@@ -260,12 +265,14 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   ),
                 ),
               ),
-            if (PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY) &&
-                (modules.isNotEmpty))
+            if ((PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY) &&
+                    modules.isNotEmpty) ||
+                isEnrolled)
               // Inside your CourseDetailScreen
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 18.0),
                     child: Align(
@@ -279,24 +286,36 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                     children: modules.map((module) {
                       return GestureDetector(
                         onTap: () {
-                          // Navigate to the AddModulesScreen with the selected module for editing
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (builder) => AddModulesScreen(
-                                course: course,
-                                module: module,
+                          if (isEnrolled) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (builder) => ShowModuleDetail(
+                                  module: module,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (builder) => AddModulesScreen(
+                                  course: course,
+                                  module: module,
+                                ),
+                              ),
+                            );
+                          }
                         },
                         child: ListTile(
+                          leading: Icon(Icons.view_module),
                           title: Text(module.moduleName),
                           subtitle: Text(module.moduleDescription),
                         ),
                       );
                     }).toList(),
                   ),
+                  SizedBox(height: 10),
                 ],
               ),
             if (PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY))
@@ -333,18 +352,82 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                       )));
                         }),
                   )
-                : Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 20),
-                    child: MyButton(
-                        disableButton: false,
-                        bgColor: primaryColor,
-                        title: "Enroll Now",
-                        onTap: () {}),
-                  ),
+                : isEnrolled
+                    ? SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 20),
+                        child: MyButton(
+                            disableButton: false,
+                            bgColor: primaryColor,
+                            title: "Enroll Now",
+                            onTap: () async {
+                              await enrollStudentInCourse(
+                                  FirebaseAuth.instance.currentUser?.uid ?? "",
+                                  widget.course.courseId);
+                            }),
+                      ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> enrollStudentInCourse(String studentId, String courseId) async {
+    try {
+      final enrollmentCollection =
+          FirebaseFirestore.instance.collection('enrollments');
+
+      // Check if the enrollment already exists
+      QuerySnapshot existingEnrollmentSnapshot = await enrollmentCollection
+          .where('studentId', isEqualTo: studentId)
+          .where('courseId', isEqualTo: courseId)
+          .get();
+
+      if (existingEnrollmentSnapshot.docs.isEmpty) {
+        // Create a new enrollment document
+        await enrollmentCollection.add({
+          'studentId': studentId,
+          'courseId': courseId,
+          'enrollmentDate': FieldValue.serverTimestamp(),
+        });
+        isEnrolled = true;
+        setState(() {});
+        print('Student enrolled in the course successfully');
+      } else {
+        print('Student is already enrolled in the course');
+      }
+    } catch (e) {
+      print('Error enrolling student in the course: $e');
+      // Handle error as needed
+    }
+  }
+
+  Future<void> checkEnrollmentAndShowModules(
+      String studentUid, String courseId) async {
+    try {
+      final enrollmentCollection =
+          FirebaseFirestore.instance.collection('enrollments');
+
+      QuerySnapshot enrollmentSnapshot = await enrollmentCollection
+          .where('studentId', isEqualTo: studentUid)
+          .where('courseId', isEqualTo: courseId)
+          .get();
+
+      if (enrollmentSnapshot.docs.isNotEmpty) {
+        // User is enrolled in the course, show modules
+        // showCourseModules(courseId);
+        isEnrolled = true;
+        setState(() {});
+        print('User is enrolled in the course');
+      } else {
+        // User is not enrolled in the course
+        print('User is not enrolled in the course');
+        // Handle accordingly, e.g., show an error message or redirect to enrollment page
+      }
+    } catch (e) {
+      print('Error checking enrollment: $e');
+      // Handle error as needed
+    }
   }
 }

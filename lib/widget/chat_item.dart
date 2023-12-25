@@ -1,15 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
+import '../screens/chat_page.dart';
 import 'avatar_image.dart';
 
+//
+// import 'avatar_image.dart';
+//
+// class ChatItem extends StatelessWidget {
+//   final String peerId;
+//   final String peerAvatar;
+//   final String peerNickname;
+//
+//   ChatItem({
+//     required this.peerId,
+//     required this.peerAvatar,
+//     required this.peerNickname,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     // Customize the UI of each chat item
+//     return ListTile(
+//       leading: CircleAvatar(
+//         // Display the peer's avatar
+//         backgroundImage: NetworkImage(peerAvatar),
+//       ),
+//       title: Text(peerNickname),
+//       subtitle: Text("Last message goes here"), // You can customize this
+//       onTap: () {
+//         // Navigate to the chat screen when a chat item is tapped
+//         Navigator.push(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) => ChatPage(
+//               arguments: ChatPageArguments(
+//                 peerId: peerId,
+//                 peerAvatar: peerAvatar,
+//                 peerName: peerNickname,
+//               ),
+//             ),
+//           ),
+//         );
+//       },
+//     );
+//   }
+// }
+
 class ChatItem extends StatelessWidget {
-  const ChatItem(this.chatData, {Key? key, this.onTap}) : super(key: key);
-  final chatData;
-  final GestureTapCallback? onTap;
+  final String peerId;
+  final String peerAvatar;
+  final String peerName;
+  final String lastMessage;
+  final String timestamp;
+
+  ChatItem({
+    required this.peerId,
+    required this.peerAvatar,
+    required this.peerName,
+    required this.lastMessage,
+    required this.timestamp,
+  });
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatPage(
+              arguments: ChatPageArguments(
+                peerId: peerId,
+                peerAvatar: peerAvatar,
+                peerName: peerName,
+              ),
+            ),
+          ),
+        );
+      },
       child: Container(
         margin: EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(10),
@@ -32,7 +101,7 @@ class ChatItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AvatarImage(
-                  chatData['image'],
+                  peerAvatar,
                   radius: 10,
                 ),
                 SizedBox(width: 10),
@@ -46,7 +115,7 @@ class ChatItem extends StatelessWidget {
                               children: <Widget>[
                                 Expanded(
                                     child: Container(
-                                        child: Text(chatData['name'],
+                                        child: Text(peerName,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
@@ -55,13 +124,17 @@ class ChatItem extends StatelessWidget {
                                 SizedBox(width: 5),
                                 Container(
                                     child: Icon(
-                                  Icons.remove_red_eye_outlined,
+                                  Icons.date_range,
                                   size: 10,
                                   color: Colors.grey,
                                 )),
                                 SizedBox(width: 3),
                                 Container(
-                                    child: Text(chatData['date'],
+                                    child: Text(
+                                        DateFormat('yyyy-MM-dd HH:mm:ss')
+                                            .format(DateTime
+                                                .fromMillisecondsSinceEpoch(
+                                                    int.parse(timestamp))),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
@@ -71,7 +144,7 @@ class ChatItem extends StatelessWidget {
                             Row(
                               children: <Widget>[
                                 Container(
-                                    child: Text(chatData['skill'],
+                                    child: Text("",
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
@@ -81,7 +154,7 @@ class ChatItem extends StatelessWidget {
                             Row(
                               children: <Widget>[
                                 Expanded(
-                                    child: Text(chatData['last_text'],
+                                    child: Text(lastMessage,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(fontSize: 13))),
