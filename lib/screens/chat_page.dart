@@ -26,7 +26,7 @@ class ChatPageState extends State<ChatPage> {
   bool isLoading = false;
   bool isTeacher = false;
   var data;
-  List<QueryDocumentSnapshot> listMessage = [];
+  String previousSenderId = "";
 
   final TextEditingController textEditingController = TextEditingController();
   final ScrollController listScrollController = ScrollController();
@@ -100,11 +100,13 @@ class ChatPageState extends State<ChatPage> {
               QuerySnapshot querySnapshot = snapshot.data!;
               List<Map<String, dynamic>> messages =
                   _extractMessages(querySnapshot);
-              messages[0]['messages'].sort((a, b) {
-                var timestampA = int.parse(a['timestamp']);
-                var timestampB = int.parse(b['timestamp']);
-                return timestampB.compareTo(timestampA);
-              });
+              if (messages.isNotEmpty) {
+                messages[0]['messages'].sort((a, b) {
+                  var timestampA = int.parse(a['timestamp']);
+                  var timestampB = int.parse(b['timestamp']);
+                  return timestampB.compareTo(timestampA);
+                });
+              }
               print("MESSAGES $messages");
               return Stack(
                 children: <Widget>[
@@ -119,10 +121,16 @@ class ChatPageState extends State<ChatPage> {
                                   var message = messages[0]['messages'][index];
                                   bool isSentByTeacher =
                                       message['senderId'] == currentUserId;
-
+                                  bool isLastMsgLeft = !isSentByTeacher;
+                                  bool showAvatar =
+                                      message['senderId'] != previousSenderId;
+                                  previousSenderId = message['senderId'];
                                   return MessageWidget(
                                     content: message['content'],
+                                    peerAvatar: widget.arguments.peerAvatar,
                                     isSentByTeacher: isSentByTeacher,
+                                    isLastMsgLeft: isLastMsgLeft,
+                                    showAvatar: showAvatar,
                                   );
                                 },
                               )
@@ -214,11 +222,17 @@ class ChatPageState extends State<ChatPage> {
 
 class MessageWidget extends StatelessWidget {
   final String content;
+  final String peerAvatar;
   final bool isSentByTeacher;
+  final bool isLastMsgLeft;
+  final bool showAvatar;
 
   MessageWidget({
     required this.content,
+    required this.peerAvatar,
     required this.isSentByTeacher,
+    required this.isLastMsgLeft,
+    required this.showAvatar,
   });
 
   @override
@@ -229,15 +243,55 @@ class MessageWidget extends StatelessWidget {
       child: Container(
         alignment:
             isSentByTeacher ? Alignment.centerRight : Alignment.centerLeft,
-        child: Card(
-          color: isSentByTeacher ? Colors.blue : Colors.green,
-          child: Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text(
-              content,
-              style: TextStyle(color: Colors.white),
+        child: Row(
+          mainAxisAlignment:
+              isSentByTeacher ? MainAxisAlignment.end : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            isLastMsgLeft && showAvatar
+                ? Material(
+                    child: Image.network(
+                      peerAvatar,
+                      loadingBuilder: (BuildContext context, Widget child,
+                          ImageChunkEvent? loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, object, stackTrace) {
+                        return Icon(
+                          Icons.account_circle,
+                          size: 35,
+                          color: grayText,
+                        );
+                      },
+                      width: 35,
+                      height: 35,
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(18),
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                  )
+                : Container(width: 35),
+            Card(
+              color: isSentByTeacher ? Colors.blue : Colors.green,
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  content,
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
