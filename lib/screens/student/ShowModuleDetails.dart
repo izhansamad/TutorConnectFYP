@@ -1,7 +1,5 @@
-import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../utils/Course.dart';
@@ -159,25 +157,81 @@ class _ExpandablePdfState extends State<ExpandablePdf> {
   }
 }
 
-class PDFViewerFromUrl extends StatelessWidget {
+class PDFViewerFromUrl extends StatefulWidget {
   const PDFViewerFromUrl({Key? key, required this.url}) : super(key: key);
 
   final String url;
 
   @override
+  State<PDFViewerFromUrl> createState() => _PDFViewerFromUrlState();
+}
+
+class _PDFViewerFromUrlState extends State<PDFViewerFromUrl> {
+  late PDFViewController _pdfController;
+  int currentPage = 0;
+  int maxPages = 0;
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onVerticalDragUpdate: (_) {}, // Absorb vertical gestures
-      child: PDF(
-        enableSwipe: true,
-        swipeHorizontal: true,
-        autoSpacing: true,
-        pageFling: true,
-        onPageChanged: (int? current, int? total) {
-          print('Current page: $current, Total pages: $total');
-        },
-      ).cachedFromUrl(url),
+    return Column(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onVerticalDragUpdate: (_) {}, // Absorb vertical gestures
+            child: PDF(
+              enableSwipe: true,
+              swipeHorizontal: true,
+              autoSpacing: true,
+              onViewCreated: (controller) async {
+                _pdfController = controller;
+                maxPages = (await _pdfController.getPageCount())!;
+                print("MAX : $maxPages");
+              },
+              pageFling: true,
+              onPageChanged: (int? current, int? total) {
+                maxPages = total! - 1;
+                print('Current page: $current, Total pages: $total');
+              },
+            ).cachedFromUrl(widget.url),
+          ),
+        ),
+        buildNavigationButtons(),
+      ],
+    );
+  }
+
+  Widget buildNavigationButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: Icon(Icons.keyboard_arrow_left),
+          onPressed: () {
+            if (currentPage > 0) {
+              setState(() {
+                currentPage -= 1;
+                _pdfController.setPage(currentPage);
+              });
+            }
+          },
+        ),
+        Text('Page ${currentPage + 1}'),
+        IconButton(
+          icon: Icon(Icons.keyboard_arrow_right),
+          onPressed: () {
+            // You need to determine the total number of pages
+            // and handle the boundary case accordingly.
+            // For simplicity, I'm assuming total pages as 5 here.
+            if (currentPage < maxPages) {
+              setState(() {
+                currentPage += 1;
+                _pdfController.setPage(currentPage);
+              });
+            }
+          },
+        ),
+      ],
     );
   }
 }

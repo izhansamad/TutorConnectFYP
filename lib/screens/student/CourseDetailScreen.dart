@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:http/http.dart' as http;
 import 'package:tutor_connect_app/screens/student/ShowModuleDetails.dart';
 import 'package:tutor_connect_app/screens/teacher/AddCourseScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/AddModulesScreen.dart';
@@ -28,6 +32,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   bool isEnrolled = false;
   List<Map<String, dynamic>> customFields = [];
   List<Module> modules = [];
+  Map<String, dynamic>? paymentIntentData;
+
   @override
   void initState() {
     getTeacherInfo(widget.course.teacherId);
@@ -362,15 +368,105 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                             bgColor: primaryColor,
                             title: "Enroll Now",
                             onTap: () async {
-                              await enrollStudentInCourse(
-                                  FirebaseAuth.instance.currentUser?.uid ?? "",
-                                  widget.course.courseId);
+                              await makePayment(widget.course);
+
+                              // await enrollStudentInCourse(
+                              //     FirebaseAuth.instance.currentUser?.uid ?? "",
+                              //     widget.course.courseId);
                             }),
                       ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> makePayment(Course course) async {
+    try {
+      paymentIntentData = await createPaymentIntent(
+          course.courseFee, 'PKR'); //json.decode(response.body);
+      // print('Response body==>${response.body.toString()}');
+      await Stripe.instance
+          .initPaymentSheet(
+              paymentSheetParameters: SetupPaymentSheetParameters(
+                  // setupIntentClientSecret: 'Your Secret Key',
+                  paymentIntentClientSecret:
+                      paymentIntentData!['client_secret'],
+                  //applePay: PaymentSheetApplePay.,
+                  // googlePay: true,
+                  //testEnv: true,
+                  customFlow: true,
+                  style: ThemeMode.light,
+                  // merchantCountryCode: 'US',
+                  merchantDisplayName: 'Tutor Connect'))
+          .then((value) {});
+
+      displayPaymentSheet();
+    } catch (e, s) {
+      print('Payment exception:$e$s');
+    }
+  }
+
+  displayPaymentSheet() async {
+    try {
+      await Stripe.instance
+          .presentPaymentSheet(
+              //       parameters: PresentPaymentSheetParameters(
+              // clientSecret: paymentIntentData!['client_secret'],
+              // confirmPayment: true,
+              // )
+              )
+          .then((newValue) async {
+        print('payment intent' + paymentIntentData!['id'].toString());
+        print(
+            'payment intent' + paymentIntentData!['client_secret'].toString());
+        print('payment intent' + paymentIntentData!['amount'].toString());
+        print('payment intent' + paymentIntentData.toString());
+        //orderPlaceApi(paymentIntentData!['id'].toString());
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("paid successfully")));
+
+        await enrollStudentInCourse(
+            FirebaseAuth.instance.currentUser?.uid ?? "",
+            widget.course.courseId);
+        paymentIntentData = null;
+      }).onError((error, stackTrace) {
+        print('Exception/DISPLAYPAYMENTSHEET==> $error $stackTrace');
+      });
+    } on StripeException catch (e) {
+      print('Exception/DISPLAYPAYMENTSHEET==> $e');
+      showDialog(
+          context: context,
+          builder: (_) => const AlertDialog(
+                content: Text("Cancelled "),
+              ));
+    } catch (e) {
+      print('$e');
+    }
+  }
+
+  //  Future<Map<String, dynamic>>
+  createPaymentIntent(String amount, String currency) async {
+    try {
+      Map<String, dynamic> body = {
+        'amount': (int.parse(amount) * 100).toString(),
+        'currency': currency,
+        'payment_method_types[]': 'card',
+      };
+      print(body);
+      var response = await http.post(
+          Uri.parse('https://api.stripe.com/v1/payment_intents'),
+          body: body,
+          headers: {
+            'Authorization':
+                'Bearer sk_test_51OY6sbG8J4zJltRhQJ8ClHJpPGMX0h2qARbaamnEaI5OgjdGpvCLPTyVGfMAbQKBcJ6meI8szICZZLAF4yRX8yWA00JUMt9PxO',
+            'Content-Type': 'application/x-www-form-urlencoded'
+          });
+      print('Create Intent reponse ===> ${response.body.toString()}');
+      return jsonDecode(response.body);
+    } catch (err) {
+      print('err charging user: ${err.toString()}');
+    }
   }
 
   Future<void> enrollStudentInCourse(String studentId, String courseId) async {
