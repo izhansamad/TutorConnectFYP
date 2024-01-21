@@ -172,119 +172,113 @@ class _ProfileScreenState extends State<ProfileScreen> {
           "Profile",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        // actions: [
-        //   Padding(
-        //     padding: const EdgeInsets.symmetric(horizontal: 5.0),
-        //     child: TextButton(
-        //       onPressed: () {},
-        //       child: Text(
-        //         'Edit',
-        //         style: TextStyle(color: primaryColor),
-        //       ),
-        //     ),
-        //   )
-        // ],
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Column(
-                children: [
-                  Align(
-                    alignment: Alignment.center,
+      body: data == null
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
                     child: Column(
                       children: [
-                        SizedBox(height: 10),
-                        Stack(
-                          children: [
-                            AvatarImage(
-                              data.image == ""
-                                  ? "https://thinksport.com.au/wp-content/uploads/2020/01/avatar-.jpg"
-                                  : data.image,
-                              width: 140,
-                              height: 140,
-                              radius: 100,
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: primaryColor, // Your primary color
-                                ),
-                                child: IconButton(
-                                  icon: Icon(Icons.edit),
-                                  onPressed: () {
-                                    _editImage();
-                                  },
-                                  color: Colors.white,
-                                  iconSize: 25,
-                                  padding: EdgeInsets.all(10),
-                                ),
+                        Align(
+                          alignment: Alignment.center,
+                          child: Column(
+                            children: [
+                              SizedBox(height: 10),
+                              Stack(
+                                children: [
+                                  AvatarImage(
+                                    data.image == ""
+                                        ? "https://thinksport.com.au/wp-content/uploads/2020/01/avatar-.jpg"
+                                        : data.image,
+                                    width: 140,
+                                    height: 140,
+                                    radius: 100,
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color:
+                                            primaryColor, // Your primary color
+                                      ),
+                                      child: IconButton(
+                                        icon: Icon(Icons.edit),
+                                        onPressed: () {
+                                          _editImage();
+                                        },
+                                        color: Colors.white,
+                                        iconSize: 25,
+                                        padding: EdgeInsets.all(10),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                              SizedBox(height: 15),
+                              Text(
+                                "${FirebaseAuth.instance.currentUser?.displayName}",
+                                style: TextStyle(
+                                    fontSize: 22, fontWeight: FontWeight.w500),
+                              ),
+                              Text(
+                                FirebaseAuth.instance.currentUser?.email ?? "",
+                                style:
+                                    TextStyle(color: Colors.grey, fontSize: 15),
+                              )
+                            ],
+                          ),
                         ),
-                        SizedBox(height: 15),
-                        Text(
-                          "${FirebaseAuth.instance.currentUser?.displayName}",
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.w500),
+                        SizedBox(height: 10),
+                        SwitchListTile(
+                          title: Text("Notifications"),
+                          secondary: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Icon(Icons.notifications_active),
+                          ), //can this be selected?
+                          dense: true,
+                          shape: BeveledRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          value: notificaionsValue,
+                          onChanged: (bool value) {
+                            setState(() {
+                              notificaionsValue = value;
+                            });
+                          },
                         ),
-                        Text(
-                          FirebaseAuth.instance.currentUser?.email ?? "",
-                          style: TextStyle(color: Colors.grey, fontSize: 15),
-                        )
+                        SizedBox(height: 10),
+                        ListTile(
+                          onTap: () async {
+                            _showLogoutConfirmationDialog();
+                          },
+                          title: Text("Logout"),
+                          dense: true,
+                          shape: BeveledRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          leading: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Icon(Icons.logout),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  SizedBox(height: 10),
-                  SwitchListTile(
-                    title: Text("Notifications"),
-                    secondary: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(Icons.notifications_active),
-                    ), //can this be selected?
-                    dense: true,
-                    shape: BeveledRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    value: notificaionsValue,
-                    onChanged: (bool value) {
-                      setState(() {
-                        notificaionsValue = value;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  ListTile(
-                    onTap: () async {
-                      _showLogoutConfirmationDialog();
-                    },
-                    title: Text("Logout"),
-                    dense: true,
-                    shape: BeveledRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    leading: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(Icons.logout),
+                ),
+                if (loading)
+                  Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: Center(
+                      child: CircularProgressIndicator(),
                     ),
                   ),
-                ],
-              ),
+              ],
             ),
-          ),
-          if (loading)
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-        ],
-      ),
     );
   }
 

@@ -1,12 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../core/colors.dart';
 import '../../utils/Course.dart';
+import '../../widget/mybutton.dart';
 
 class ShowModuleDetail extends StatefulWidget {
   final Module module;
-  const ShowModuleDetail({Key? key, required this.module}) : super(key: key);
+  final String courseId;
+  final bool isCompleted;
+  const ShowModuleDetail(
+      {Key? key,
+      required this.module,
+      required this.courseId,
+      required this.isCompleted})
+      : super(key: key);
 
   @override
   State<ShowModuleDetail> createState() => _ShowModuleDetailState();
@@ -14,9 +25,11 @@ class ShowModuleDetail extends StatefulWidget {
 
 class _ShowModuleDetailState extends State<ShowModuleDetail> {
   late VideoPlayerController _controller;
+  bool isCompleted = false;
   @override
   void initState() {
     super.initState();
+    isCompleted = widget.isCompleted;
     _controller = VideoPlayerController.network(
         "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
       ..initialize().then((_) {
@@ -31,45 +44,149 @@ class _ShowModuleDetailState extends State<ShowModuleDetail> {
       appBar: AppBar(
         title: Text("Module Detail"),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18.0),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Text(module.moduleName,
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        module.moduleName,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        module.moduleDescription,
+                        style: TextStyle(
+                            color: Colors.grey.shade700, fontSize: 13),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        "Materials",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                  buildMaterialList(module.materials),
+                ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18.0),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  module.moduleDescription,
-                  style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+          ),
+          isCompleted
+              ? Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                  child: MyButton(
+                      disableButton: false,
+                      bgColor: primaryColor,
+                      title: "Completed",
+                      onTap: () {
+                        _showConfirmationDialog(unmark: true);
+                      }),
+                )
+              : Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                  child: MyButton(
+                      disableButton: false,
+                      bgColor: primaryColor,
+                      title: "Mark Module As Complete",
+                      onTap: () {
+                        _showConfirmationDialog();
+                      }),
                 ),
-              ),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18.0),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Text("Materials",
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-              ),
-            ),
-            buildMaterialList(module.materials),
-          ],
-        ),
+        ],
       ),
     );
+  }
+
+  void _showConfirmationDialog({bool unmark = false}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Are you sure?"),
+          content: unmark
+              ? Text("Do you want to mark this module as in-progress?")
+              : Text("Do you want to mark this module as complete?"),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: primaryColor),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                "OK",
+                style: TextStyle(color: primaryColor),
+              ),
+              onPressed: () async {
+                try {
+                  markModuleAsComplete(unmark);
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  print("Error: $e");
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void markModuleAsComplete(bool unmark) async {
+    try {
+      final enrollmentCollection =
+          FirebaseFirestore.instance.collection('enrollments');
+      QuerySnapshot querySnapshot = await enrollmentCollection
+          .where('studentId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+          .where('courseId', isEqualTo: widget.courseId)
+          .get();
+      if (!querySnapshot.docs.isEmpty) {
+        DocumentReference enrollmentDocRef = querySnapshot.docs.first.reference;
+        await enrollmentDocRef.update({
+          'completedModules': unmark
+              ? FieldValue.arrayRemove([widget.module.moduleId])
+              : FieldValue.arrayUnion([widget.module.moduleId]),
+        });
+        setState(() {
+          isCompleted = !unmark;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: unmark
+                ? Text("Module Marked As In-progress")
+                : Text("Module Marked As Complete")));
+      } else {
+        print('Not Found');
+      }
+    } catch (e) {
+      print('Error marking module as complete: $e');
+      // Handle error as needed
+    }
   }
 
   Widget buildMaterialList(List<CourseMaterial>? materials) {
@@ -144,9 +261,7 @@ class _ExpandablePdfState extends State<ExpandablePdf> {
         ),
         isExpanded
             ? Container(
-                height: 500,
-                child: buildPdfViewer(
-                    "https://ncu.rcnpv.com.tw/Uploads/20131231103232738561744.pdf"))
+                height: 500, child: buildPdfViewer(widget.material.materialUrl))
             : Container(),
       ],
     );
@@ -185,8 +300,6 @@ class _PDFViewerFromUrlState extends State<PDFViewerFromUrl> {
               autoSpacing: true,
               onViewCreated: (controller) async {
                 _pdfController = controller;
-                maxPages = (await _pdfController.getPageCount())!;
-                print("MAX : $maxPages");
               },
               pageFling: true,
               onPageChanged: (int? current, int? total) {
@@ -220,9 +333,6 @@ class _PDFViewerFromUrlState extends State<PDFViewerFromUrl> {
         IconButton(
           icon: Icon(Icons.keyboard_arrow_right),
           onPressed: () {
-            // You need to determine the total number of pages
-            // and handle the boundary case accordingly.
-            // For simplicity, I'm assuming total pages as 5 here.
             if (currentPage < maxPages) {
               setState(() {
                 currentPage += 1;

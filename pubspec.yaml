@@ -58,6 +58,7 @@ dependencies:
   fluttertoast: ^8.2.4
   flutter_stripe: ^9.5.0+1
   url_launcher: ^6.2.3
+  getwidget: ^4.0.0
 
 dev_dependencies:
   flutter_test:

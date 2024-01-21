@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:getwidget/colors/gf_color.dart';
+import 'package:getwidget/components/progress_bar/gf_progress_bar.dart';
 import 'package:http/http.dart' as http;
 import 'package:tutor_connect_app/screens/student/ShowModuleDetails.dart';
 import 'package:tutor_connect_app/screens/teacher/AddCourseScreen.dart';
@@ -33,6 +35,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   List<Map<String, dynamic>> customFields = [];
   List<Module> modules = [];
   Map<String, dynamic>? paymentIntentData;
+  List<String> completedModules = [];
+  List<String> allModulesIds = [];
 
   @override
   void initState() {
@@ -56,6 +60,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
       modules = querySnapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        allModulesIds.add(data['moduleId']);
         return Module(
           // Map the fields according to your Module class structure
           moduleId: data['moduleId'],
@@ -78,6 +83,17 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
       print('Error getting modules data from Firestore: $e');
       // Handle error as needed
     }
+  }
+
+  double calculateCourseProgress(
+      List<String> completedModuleIds, List<String> allModuleIds) {
+    // Filter out completed module IDs that are not in the list of all module IDs
+    List<String> validCompletedModuleIds =
+        completedModuleIds.where((id) => allModuleIds.contains(id)).toList();
+
+    double progress = validCompletedModuleIds.length / allModuleIds.length;
+
+    return progress;
   }
 
   void getTeacherInfo(String teacherDocId) async {
@@ -271,6 +287,37 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   ),
                 ),
               ),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 18.0, vertical: 5),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Text("Course Progress",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+              ),
+            ),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8),
+              child: GFProgressBar(
+                percentage:
+                    calculateCourseProgress(completedModules, allModulesIds),
+                lineHeight: 20,
+                alignment: MainAxisAlignment.spaceBetween,
+                child: Text(
+                  "${(calculateCourseProgress(completedModules, allModulesIds) * 100)}%",
+                  textAlign: TextAlign.end,
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+                trailing: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Icon(Icons.check_circle, color: GFColors.SUCCESS),
+                ),
+                backgroundColor: Colors.black26,
+                progressBarColor: primaryColor,
+              ),
+            ),
             if ((PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY) &&
                     modules.isNotEmpty) ||
                 isEnrolled)
@@ -298,6 +345,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               MaterialPageRoute(
                                 builder: (builder) => ShowModuleDetail(
                                   module: module,
+                                  courseId: widget.course.courseId,
+                                  isCompleted: completedModules
+                                      .contains(module.moduleId),
                                 ),
                               ),
                             );
@@ -317,6 +367,19 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                           leading: Icon(Icons.view_module),
                           title: Text(module.moduleName),
                           subtitle: Text(module.moduleDescription),
+                          trailing: isEnrolled
+                              ? completedModules.contains(module.moduleId)
+                                  ? Text(
+                                      "Completed",
+                                      style: TextStyle(
+                                          color: Colors.green.shade800),
+                                    )
+                                  : Text(
+                                      "In-Progress",
+                                      style:
+                                          TextStyle(color: Colors.red.shade800),
+                                    )
+                              : SizedBox(),
                         ),
                       );
                     }).toList(),
@@ -511,8 +574,10 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           .get();
 
       if (enrollmentSnapshot.docs.isNotEmpty) {
-        // User is enrolled in the course, show modules
-        // showCourseModules(courseId);
+        DocumentSnapshot enrollmentDoc = enrollmentSnapshot.docs.first;
+        completedModules = List<String>.from(enrollmentDoc['completedModules']);
+
+        print("Completed MODULES: $completedModules");
         isEnrolled = true;
         setState(() {});
         print('User is enrolled in the course');
