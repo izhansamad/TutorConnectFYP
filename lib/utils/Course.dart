@@ -10,6 +10,7 @@ class Course {
   final String courseImage;
   final String? courseRating;
   final String teacherId;
+  bool courseStatus;
   List<Map<String, dynamic>>? customFields;
   List<Module>? modules;
 
@@ -23,6 +24,7 @@ class Course {
     required this.courseImage,
     required this.courseRating,
     required this.teacherId,
+    this.courseStatus = false,
     this.customFields,
     this.modules,
   });
@@ -38,10 +40,12 @@ class Course {
       courseImage: map['courseImage'],
       courseRating: map['courseRating'],
       teacherId: map['teacherId'],
+      courseStatus: map['courseStatus'] ?? false,
       customFields: List<Map<String, dynamic>>.from(map['customFields'] ?? []),
       modules: (map['modules'] as List<dynamic>?)
-          ?.map((moduleMap) => Module.fromMap(moduleMap))
-          .toList(),
+              ?.map((moduleMap) => Module.fromMap(moduleMap))
+              .toList() ??
+          [],
     );
   }
 

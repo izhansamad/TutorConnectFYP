@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:tutor_connect_app/screens/student/ShowModuleDetails.dart';
 import 'package:tutor_connect_app/screens/teacher/AddCourseScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/AddModulesScreen.dart';
+import 'package:tutor_connect_app/utils/GetFirestore.dart';
 import 'package:tutor_connect_app/utils/PrefsManager.dart';
 
 import '../../core/colors.dart';
@@ -33,6 +34,7 @@ class CourseDetailScreen extends StatefulWidget {
 class _CourseDetailScreenState extends State<CourseDetailScreen> {
   Teacher? teacherData;
   bool isEnrolled = false;
+  bool isTeacher = false;
   List<Map<String, dynamic>> customFields = [];
   List<Module> modules = [];
   Map<String, dynamic>? paymentIntentData;
@@ -41,6 +43,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
   @override
   void initState() {
+    isTeacher = PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY);
     getTeacherInfo(widget.course.teacherId);
     getModules();
     checkEnrollmentAndShowModules(
@@ -189,9 +192,32 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                 radius: 5,
               ),
             ),
-            SizedBox(
-              height: 10,
-            ),
+            isTeacher
+                ? SwitchListTile(
+                    value: course.courseStatus,
+                    onChanged: (val) async {
+                      if (modules.isNotEmpty || course.courseStatus == true) {
+                        bool success = await GetFirestore().updateCourseStatus(
+                            course.courseId, course.teacherId, val);
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Course Status Updated")));
+                          setState(() {
+                            course.courseStatus = val;
+                          });
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text("Add modules to publish course")));
+                      }
+                    },
+                    title: Text(
+                      "Course Status",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                  )
+                : SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18.0),
               child: Align(

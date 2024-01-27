@@ -349,6 +349,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           'courseObj': courseObj,
           'courseFee': courseFee,
           'courseDuration': courseDuration,
+          'courseStatus': false,
           'courseImage': courseImage,
           'teacherId': teacherUid,
           'customFields': customFields,

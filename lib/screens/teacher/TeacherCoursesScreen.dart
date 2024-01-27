@@ -100,8 +100,9 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
                 : Expanded(
                     child: ListView.builder(
                         itemCount: courses.length,
-                        itemBuilder: (BuildContext context, int index) =>
-                            GestureDetector(
+                        itemBuilder: (BuildContext context, int index) {
+                          if (courses[index].courseStatus || isTeacher) {
+                            return GestureDetector(
                                 onTap: () {
                                   Navigator.push(
                                       context,
@@ -110,7 +111,11 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
                                               CourseDetailScreen(
                                                   course: courses[index])));
                                 },
-                                child: CourseBox(course: courses[index]))),
+                                child: CourseBox(course: courses[index]));
+                          } else {
+                            return null;
+                          }
+                        }),
                   ),
           ],
         ));
