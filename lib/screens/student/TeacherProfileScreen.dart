@@ -1,6 +1,7 @@
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:tutor_connect_app/screens/chat_page.dart';
 
 import '../../core/colors.dart';
@@ -62,6 +63,65 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     );
   }
 
+  void _showRatingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        double _rating = 0;
+        String _message = '';
+
+        return AlertDialog(
+          title: Text('Give Rating'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              RatingBar.builder(
+                initialRating: _rating,
+                minRating: 1,
+                direction: Axis.horizontal,
+                allowHalfRating: false,
+                itemCount: 5,
+                itemSize: 35.0,
+                itemBuilder: (context, _) => Icon(
+                  Icons.star,
+                  color: Colors.amber,
+                ),
+                onRatingUpdate: (rating) {
+                  _rating = rating;
+                },
+              ),
+              SizedBox(height: 20),
+              TextField(
+                onChanged: (value) {
+                  _message = value;
+                },
+                decoration: InputDecoration(
+                  hintText: 'Write a message (optional)',
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                print('Rating: $_rating, Message: $_message');
+                Navigator.of(context).pop();
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   getBody() {
     var teacher = widget.teacher;
     customFields = teacher.customFields ?? [];
@@ -97,35 +157,21 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           SizedBox(
             height: 25,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
+          GestureDetector(
+            onTap: () {
+              _showRatingDialog(context);
+            },
+            child: RatingBarIndicator(
+              rating: 4.0,
+              itemBuilder: (context, index) => Icon(
                 Icons.star,
-                size: 18,
-                color: Colors.orangeAccent,
+                color: Colors.amber,
               ),
-              Icon(
-                Icons.star,
-                size: 18,
-                color: Colors.orangeAccent,
-              ),
-              Icon(
-                Icons.star,
-                size: 18,
-                color: Colors.orangeAccent,
-              ),
-              Icon(
-                Icons.star,
-                size: 18,
-                color: Colors.orangeAccent,
-              ),
-              Icon(
-                Icons.star,
-                size: 18,
-                color: Colors.grey.shade300,
-              ),
-            ],
+              itemCount: 5,
+              itemSize: 23.0,
+              unratedColor: Colors.amber.withAlpha(50),
+              direction: Axis.horizontal,
+            ),
           ),
           SizedBox(
             height: 5,
@@ -175,20 +221,13 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           for (int i = 0; i < customFields.length; i++)
             Align(
               alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      customFields[i]['heading'],
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    Text(customFields[i]['value'],
-                        style: TextStyle(color: Colors.grey, fontSize: 14)),
-                    SizedBox(height: 10),
-                  ],
+              child: ListTile(
+                title: Text(
+                  customFields[i]['heading'],
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  customFields[i]['value'],
                 ),
               ),
             ),

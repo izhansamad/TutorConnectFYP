@@ -55,11 +55,6 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         );
       });
     }
-    // final cloudinary = Cloudinary.full(
-    //   apiKey: "apiKey",
-    //   apiSecret: "apiSecret",
-    //   cloudName: "cloudName",
-    // );
     super.initState();
   }
 
@@ -240,35 +235,20 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
       isLoading = true;
     });
     try {
-      final userDocRef = FirebaseFirestore.instance
+      final teacherUid = FirebaseAuth.instance.currentUser!.uid;
+      final teacherCoursesCollection = FirebaseFirestore.instance
           .collection('courses')
-          .doc(FirebaseAuth.instance.currentUser!.uid);
+          .doc(teacherUid)
+          .collection('teacherCourses');
 
-      // Get the existing list of courses
-      var existingData = (await userDocRef.get()).data();
-      List<Map<String, dynamic>> existingCourses = [];
+      // Check if the course already exists
+      QuerySnapshot existingCoursesSnapshot = await teacherCoursesCollection
+          .where('courseId', isEqualTo: widget.course?.courseId)
+          .get();
 
-      if (existingData != null && existingData['courses'] != null) {
-        existingCourses = List.from(existingData['courses']);
-      }
-
-      bool courseExists = false;
-      int existingCourseIndex = -1;
-
-      for (int i = 0; i < existingCourses.length; i++) {
-        if (existingCourses[i]['courseName'] == widget.course?.courseName) {
-          courseExists = true;
-          existingCourseIndex = i;
-          break;
-        }
-      }
-
-      if (courseExists) {
-        // Delete the existing course
-        existingCourses.removeAt(existingCourseIndex);
-        await userDocRef.set({
-          'courses': existingCourses,
-        });
+      // If the course exists, delete it
+      if (existingCoursesSnapshot.docs.isNotEmpty) {
+        await existingCoursesSnapshot.docs.first.reference.delete();
         setState(() {
           isLoading = false;
         });
@@ -278,8 +258,17 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
             context,
             MaterialPageRoute(builder: (builder) => TeacherHome()),
             (route) => false);
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("The course does not exist")));
       }
     } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Error $e")));
     }
@@ -337,11 +326,11 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
       // Check if the course already exists
       QuerySnapshot existingCoursesSnapshot = await teacherCoursesCollection
-          .where('courseName', isEqualTo: courseName)
+          .where('courseId', isEqualTo: widget.course?.courseId)
           .get();
       bool courseExists = existingCoursesSnapshot.docs.isNotEmpty;
 
-      if (courseExists) {
+      if (widget.course != null) {
         // Update the existing course document
         final existingCourseDoc = existingCoursesSnapshot.docs.first;
         await existingCourseDoc.reference.update({
@@ -383,90 +372,6 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           .showSnackBar(SnackBar(content: Text("Failed $e")));
     }
   }
-
-  // Future<void> saveCourseToFirestore(
-  //   String courseName,
-  //   String courseDesc,
-  //   String courseObj,
-  //   String courseFee,
-  //   String courseDuration,
-  //   String courseImage,
-  // ) async {
-  //   List<Map<String, dynamic>> customFields = [];
-  //
-  //   for (int i = 0; i < customFieldHeadingControllers.length; i++) {
-  //     String heading = customFieldHeadingControllers[i].text;
-  //     String value = customFieldValueControllers[i].text;
-  //
-  //     if (heading.isNotEmpty || value.isNotEmpty) {
-  //       customFields.add({'heading': heading, 'value': value});
-  //     }
-  //   }
-  //   try {
-  //     final userDocRef = FirebaseFirestore.instance
-  //         .collection('courses')
-  //         .doc(FirebaseAuth.instance.currentUser!.uid);
-  //
-  //     // Get the existing list of courses
-  //     var existingData = (await userDocRef.get()).data();
-  //     List<Map<String, dynamic>> existingCourses = [];
-  //
-  //     if (existingData != null && existingData['courses'] != null) {
-  //       existingCourses = List.from(existingData['courses']);
-  //     }
-  //     bool courseExists = false;
-  //     int existingCourseIndex = -1;
-  //
-  //     for (int i = 0; i < existingCourses.length; i++) {
-  //       if (existingCourses[i]['courseName'] == courseName) {
-  //         courseExists = true;
-  //         existingCourseIndex = i;
-  //         break;
-  //       }
-  //     }
-  //     if (courseExists) {
-  //       Map<String, dynamic> currentCourse =
-  //           existingCourses[existingCourseIndex];
-  //       existingCourses[existingCourseIndex] = {
-  //         'courseName': courseName,
-  //         'courseDesc': courseDesc,
-  //         'courseObj': courseObj,
-  //         'courseFee': courseFee,
-  //         'courseDuration': courseDuration,
-  //         'courseImage': currentCourse['courseImage'],
-  //         'teacherId': FirebaseAuth.instance.currentUser!.uid,
-  //         'customFields': customFields,
-  //       };
-  //     } else {
-  //       existingCourses.add({
-  //         'courseName': courseName,
-  //         'courseDesc': courseDesc,
-  //         'courseObj': courseObj,
-  //         'courseFee': courseFee,
-  //         'courseDuration': courseDuration,
-  //         'courseImage': courseImage,
-  //         'teacherId': FirebaseAuth.instance.currentUser!.uid,
-  //         'customFields': customFields,
-  //       });
-  //     }
-  //     // Update the document with the new list of courses
-  //     await userDocRef.set({
-  //       'courses': existingCourses,
-  //     });
-  //
-  //     print('Course data saved to Firestore');
-  //     ScaffoldMessenger.of(context)
-  //         .showSnackBar(SnackBar(content: Text("Course Saved")));
-  //     Navigator.pushAndRemoveUntil(
-  //         context,
-  //         MaterialPageRoute(builder: (builder) => TeacherHome()),
-  //         (route) => false);
-  //   } catch (e) {
-  //     print('Error saving Course data to Firestore: $e');
-  //     ScaffoldMessenger.of(context)
-  //         .showSnackBar(SnackBar(content: Text("Failed $e")));
-  //   }
-  // }
 
   Future<String> _uploadImageToFirebaseStorage(XFile imageFile) async {
     String imagePath =
