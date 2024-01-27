@@ -8,6 +8,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:getwidget/colors/gf_color.dart';
 import 'package:getwidget/components/progress_bar/gf_progress_bar.dart';
 import 'package:http/http.dart' as http;
+import 'package:tutor_connect_app/screens/Certificate.dart';
 import 'package:tutor_connect_app/screens/student/ShowModuleDetails.dart';
 import 'package:tutor_connect_app/screens/teacher/AddCourseScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/AddModulesScreen.dart';
@@ -373,6 +374,26 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   ),
                   backgroundColor: Colors.black26,
                   progressBarColor: primaryColor,
+                ),
+              ),
+            if (calculateCourseProgress(completedModules, allModulesIds) == 1.0)
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: TextButton(
+                    child: Text("Get Certificate"),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (builder) => Certificate(
+                                  username: FirebaseAuth
+                                          .instance.currentUser?.displayName ??
+                                      "",
+                                  coursename: course.courseName)));
+                    },
+                  ),
                 ),
               ),
             if ((PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY) &&

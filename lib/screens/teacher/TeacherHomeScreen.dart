@@ -59,20 +59,20 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
           ),
         ),
         actions: [
-          Container(
-            padding: EdgeInsets.only(right: 17),
-            child: badges.Badge(
-              position: BadgePosition.topEnd(top: -9, end: -7),
-              badgeContent: Text(
-                '2',
-                style: TextStyle(color: Colors.white),
-              ),
-              child: Icon(
-                Icons.notifications_sharp,
-                color: primaryColor,
-              ),
-            ),
-          )
+          // Container(
+          //   padding: EdgeInsets.only(right: 17),
+          //   child: badges.Badge(
+          //     position: BadgePosition.topEnd(top: -9, end: -7),
+          //     badgeContent: Text(
+          //       '2',
+          //       style: TextStyle(color: Colors.white),
+          //     ),
+          //     child: Icon(
+          //       Icons.notifications_sharp,
+          //       color: primaryColor,
+          //     ),
+          //   ),
+          // )
         ],
       ),
       body: Center(

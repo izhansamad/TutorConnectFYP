@@ -236,22 +236,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         SizedBox(height: 10),
-                        SwitchListTile(
-                          title: Text("Notifications"),
-                          secondary: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Icon(Icons.notifications_active),
-                          ), //can this be selected?
-                          dense: true,
-                          shape: BeveledRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          value: notificaionsValue,
-                          onChanged: (bool value) {
-                            setState(() {
-                              notificaionsValue = value;
-                            });
-                          },
-                        ),
+                        // SwitchListTile(
+                        //   title: Text("Notifications"),
+                        //   secondary: Padding(
+                        //     padding: const EdgeInsets.all(8.0),
+                        //     child: Icon(Icons.notifications_active),
+                        //   ), //can this be selected?
+                        //   dense: true,
+                        //   shape: BeveledRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(10)),
+                        //   value: notificaionsValue,
+                        //   onChanged: (bool value) {
+                        //     setState(() {
+                        //       notificaionsValue = value;
+                        //     });
+                        //   },
+                        // ),
                         SizedBox(height: 10),
                         ListTile(
                           onTap: () async {

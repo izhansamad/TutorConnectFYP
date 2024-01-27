@@ -1,9 +1,6 @@
-import 'package:badges/badges.dart';
-import 'package:badges/badges.dart' as badges;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tutor_connect_app/core/colors.dart';
 import 'package:tutor_connect_app/widget/searchBar.dart';
 
 import '../../utils/Teacher.dart';
@@ -59,22 +56,22 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        actions: [
-          Container(
-            padding: EdgeInsets.only(right: 17),
-            child: badges.Badge(
-              position: BadgePosition.topEnd(top: -9, end: -7),
-              badgeContent: Text(
-                '2',
-                style: TextStyle(color: Colors.white),
-              ),
-              child: Icon(
-                Icons.notifications_sharp,
-                color: primaryColor,
-              ),
-            ),
-          )
-        ],
+        // actions: [
+        //   Container(
+        //     padding: EdgeInsets.only(right: 17),
+        //     child: badges.Badge(
+        //       position: BadgePosition.topEnd(top: -9, end: -7),
+        //       badgeContent: Text(
+        //         '2',
+        //         style: TextStyle(color: Colors.white),
+        //       ),
+        //       child: Icon(
+        //         Icons.notifications_sharp,
+        //         color: primaryColor,
+        //       ),
+        //     ),
+        //   )
+        // ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
