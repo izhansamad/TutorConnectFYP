@@ -77,6 +77,32 @@ class AllTeachersDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<Teacher?> getTeacherById(String teacherId) async {
+    try {
+      // Reference to the 'teacher' collection
+      CollectionReference teachersCollection =
+      FirebaseFirestore.instance.collection('teacher');
+
+      // Get the document snapshot corresponding to the provided teacher ID
+      DocumentSnapshot teacherDocSnapshot =
+      await teachersCollection.doc(teacherId).get();
+
+      // Check if the document exists
+      if (teacherDocSnapshot.exists) {
+        // Create a Teacher object from the document snapshot data
+        Teacher teacher = Teacher.fromDocument(teacherDocSnapshot);
+        return teacher;
+      } else {
+        // If the document does not exist, return null
+        return null;
+      }
+    } catch (error) {
+      // Handle any errors that occur during the Firestore query
+      print("Error fetching teacher by ID: $error");
+      throw error;
+    }
+  }
+
   Future<List<Teacher>?> getAllTeachersFromFirestore() async {
     try {
       List<Teacher> teachersList = [];
@@ -109,6 +135,7 @@ class Teacher {
   final String speciality;
   final String qualification;
   final String rating;
+  final String fcmToken;
   final String? image;
   List<Map<String, dynamic>>? customFields;
 
@@ -123,6 +150,7 @@ class Teacher {
       required this.qualification,
       required this.rating,
       required this.image,
+      required this.fcmToken,
       this.customFields});
 
   factory Teacher.fromMap(Map<String, dynamic> map) {
@@ -137,6 +165,7 @@ class Teacher {
       qualification: map['qualification'],
       image: map['image'],
       rating: map['rating'],
+      fcmToken: map['pushToken'] ?? "",
       customFields: List<Map<String, dynamic>>.from(map['customFields'] ?? []),
     );
   }

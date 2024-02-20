@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:tutor_connect_app/utils/PrefsManager.dart';
 import 'package:tutor_connect_app/widget/searchBar.dart';
 
+import '../utils/Student.dart';
+import '../utils/Teacher.dart';
 import '../utils/chat_provider.dart';
 import '../widget/chat_item.dart';
 
@@ -17,6 +19,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   late final ChatProvider chatProvider = context.read<ChatProvider>();
+  late final StudentDataProvider studentProvider =
+      context.read<StudentDataProvider>();
+  late final TeacherDataProvider teacherProvider =
+      context.read<TeacherDataProvider>();
   late final String currentUserId;
   bool isTeacher = false;
 
@@ -96,14 +102,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                 : participants['teacherImage'];
                             var peerNickname = isTeacher
                                 ? participants['studentName']
-                                : participants[
-                                    'teacherName']; // Get the peer's nickname
+                                : participants['teacherName'];
+                            var peerFCMToken = !isTeacher
+                                ? teacherProvider.teacherData?.fcmToken ?? ""
+                                : studentProvider.studentData?.fcmToken ?? "";
+                            print(
+                                "FCM TEACHER: ${teacherProvider.teacherData?.fcmToken ?? ""}, FCM STUDENT: ${studentProvider.studentData?.fcmToken ?? ""}");
+
                             return ChatItem(
                               peerId: peerId,
                               peerAvatar: peerAvatar,
                               peerName: peerNickname,
                               lastMessage: lastMessage,
                               timestamp: timestamp,
+                              peerFCMToken: peerFCMToken,
                             );
                           },
                         )

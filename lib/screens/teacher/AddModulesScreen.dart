@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:tutor_connect_app/screens/teacher/AddQuizScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherEditProfileScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherHome.dart';
 
@@ -232,6 +233,19 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
               },
               child: Text("Save Module"),
             ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (builder) => AddQuizScreen(
+                                courseId: widget.course.courseId,
+                                moduleId: widget.module!.moduleId ?? "")));
+                  },
+                  child: Text("Add Quiz")),
+            )
           ],
         ),
       ),

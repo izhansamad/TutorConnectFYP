@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -359,6 +360,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> saveStudentToFirestore(String email, String fullName,
       String phoneNumber, password, image) async {
     try {
+      String? pushToken = await FirebaseMessaging.instance.getToken();
       final userDocRef = FirebaseFirestore.instance
           .collection('student')
           .doc(FirebaseAuth.instance.currentUser!.uid);
@@ -367,7 +369,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'fullName': fullName,
         'phoneNumber': phoneNumber,
         'password': password,
-        'image': image
+        'image': image,
+        'pushToken': pushToken
       });
       print('User data saved to Firestore');
     } catch (e) {
@@ -395,6 +398,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
     }
     try {
+      String? pushToken = await FirebaseMessaging.instance.getToken();
+
       final userDocRef = FirebaseFirestore.instance
           .collection('teacher')
           .doc(FirebaseAuth.instance.currentUser!.uid);
@@ -410,6 +415,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'about': about,
         'rating': '5',
         'image': image,
+        'pushToken': pushToken,
         'customFields': updatedCustomFields,
       });
       print('Teacher data saved to Firestore');

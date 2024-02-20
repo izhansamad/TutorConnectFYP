@@ -207,6 +207,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                           builder: (builder) => ChatPage(
                               arguments: ChatPageArguments(
                                   peerAvatar: teacher.image ?? "",
+                                  peerFCMToken: teacher.fcmToken,
                                   peerId: teacher.id,
                                   peerName: teacher.fullName))));
                 },

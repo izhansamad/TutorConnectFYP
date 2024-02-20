@@ -26,106 +26,165 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController userEmail = TextEditingController();
   TextEditingController userPass = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool isPasswordVisible = false;
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Scaffold(
           backgroundColor: Colors.grey.shade100,
-          body: Padding(
-            padding: EdgeInsets.only(top: 50.0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  SpaceVH(height: 50.0),
-                  Text(
-                    'Welcome to Tutor Connect',
-                    style: headline1,
-                  ),
-                  SpaceVH(height: 10.0),
-                  Text(
-                    'Please sign in to your account',
-                    style: TextStyle(color: Colors.grey.shade800),
-                  ),
-                  SpaceVH(height: 60.0),
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        textField(
-                            controller: userEmail,
-                            hintTxt: 'Email',
-                            icon: Icons.email,
-                            validator: validateRequired),
-                        textField(
-                            controller: userPass,
-                            icon: Icons.visibility_off,
-                            isObs: true,
-                            hintTxt: 'Password',
-                            validator: null),
-                      ],
+          body: Center(
+            child: Padding(
+              padding: EdgeInsets.only(top: 10.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Image.asset(
+                      "assets/image/icon_logo.png",
+                      width: 130,
                     ),
-                  ),
-                  SpaceVH(height: 10.0),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 20.0),
-                      child: TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'Forgot Password?',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: primaryColor.withOpacity(0.8)),
+                    Text(
+                      'Welcome to Tutor Connect',
+                      style: headline1,
+                    ),
+                    SpaceVH(height: 5.0),
+                    Text(
+                      'Please sign in to your account',
+                      style: TextStyle(color: Colors.grey.shade800),
+                    ),
+                    SpaceVH(height: 40.0),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          textField(
+                              controller: userEmail,
+                              hintTxt: 'Email',
+                              icon: Icons.email,
+                              validator: validateRequired),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0,
+                              vertical: 8.0,
+                            ),
+                            child: Container(
+                              height: 60.0,
+                              padding: EdgeInsets.only(left: 20.0, right: 20),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      controller: userPass,
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
+                                      obscureText: !isPasswordVisible,
+                                      validator: null,
+                                      decoration: InputDecoration(
+                                        helperText: ' ',
+                                        contentPadding:
+                                            EdgeInsets.only(bottom: 3),
+                                        border: InputBorder.none,
+                                        hintText: "Password",
+                                        hintStyle: hintStyle,
+                                      ),
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        isPasswordVisible = !isPasswordVisible;
+                                      });
+                                    },
+                                    child: Icon(
+                                      isPasswordVisible
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                      color: primaryColor,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    SpaceVH(height: 10.0),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 20.0),
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: primaryColor.withOpacity(0.8)),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  SpaceVH(height: 70.0),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Column(
-                      children: [
-                        MainButton(
-                          onTap: () async {
-                            if (_formKey.currentState!.validate()) {
-                              await signIn();
-                            }
-                          },
-                          text: 'Sign in',
-                          btnColor: primaryColor,
-                        ),
-                        SpaceVH(height: 20.0),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (builder) => SignUpScreen()));
-                          },
-                          child: RichText(
-                            text: TextSpan(children: [
-                              TextSpan(
-                                text: 'Don\'t have an account? ',
-                                style: TextStyle(
-                                    fontSize: 14.0,
-                                    color: Colors.grey.shade700),
-                              ),
-                              TextSpan(
-                                text: ' Sign Up',
-                                style: headlineDot.copyWith(
-                                  fontSize: 14.0,
-                                ),
-                              ),
-                            ]),
+                    SpaceVH(height: 50.0),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                        children: [
+                          MainButton(
+                            onTap: () async {
+                              if (_formKey.currentState!.validate()) {
+                                await signIn();
+                              }
+                            },
+                            text: 'Sign in',
+                            btnColor: primaryColor,
                           ),
-                        )
-                      ],
-                    ),
-                  )
-                ],
+                          SpaceVH(height: 20.0),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (builder) => SignUpScreen()));
+                            },
+                            child: RichText(
+                              text: TextSpan(children: [
+                                TextSpan(
+                                  text: 'Don\'t have an account? ',
+                                  style: TextStyle(
+                                      fontSize: 14.0,
+                                      color: Colors.grey.shade700),
+                                ),
+                                TextSpan(
+                                  text: ' Sign Up',
+                                  style: headlineDot.copyWith(
+                                    fontSize: 14.0,
+                                  ),
+                                ),
+                              ]),
+                            ),
+                          ),
+                          SpaceVH(
+                            height: 10,
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ),

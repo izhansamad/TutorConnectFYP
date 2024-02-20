@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
 import 'package:tutor_connect_app/utils/PrefsManager.dart';
 
 class ChatProvider {
@@ -44,9 +47,11 @@ class ChatProvider {
       required String studentName,
       required String teacherName,
       required String teacherImage,
+      required String fcmTokenTeacher,
+      required String fcmTokenStudent,
       required String studentImage}) async {
     try {
-      // Reference to the 'conversations' collection
+      bool isTeacher = PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY);
       CollectionReference conversationsCollection =
           FirebaseFirestore.instance.collection('conversations');
 
@@ -64,9 +69,7 @@ class ChatProvider {
         await conversationDoc.reference.update({
           'messages': FieldValue.arrayUnion([
             {
-              'senderId': PrefsManager().getBool(PrefsManager().IS_TEACHER_KEY)
-                  ? teacherId
-                  : studentId,
+              'senderId': isTeacher ? teacherId : studentId,
               'content': content,
               'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
             },
@@ -85,16 +88,51 @@ class ChatProvider {
           },
           'messages': [
             {
-              'senderId':
-                  PrefsManager().getBool('isTeacher') ? teacherId : studentId,
+              'senderId': isTeacher ? teacherId : studentId,
               'content': content,
               'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
             },
           ],
         });
       }
+      String peerName = !isTeacher ? studentName : teacherName;
+      await sendNotification(!isTeacher ? fcmTokenTeacher : fcmTokenStudent,
+          "New Message from $peerName", content);
     } catch (error) {
       print('Error sending message: $error');
+    }
+  }
+
+  Future<void> sendNotification(
+      String fcmToken, String title, String body) async {
+    final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization':
+          'key=AAAAqRdeJF4:APA91bEHLLK8rBAP7N8LBNq2hc5cZRNlZIZybW5M_n2qAm9vRLyMwb7qLixLnVhB2VXAaX48WNJONB2Dm3btMgr0yffvwnXT31Xi5LZFmxENmI-01Dm0exhYkp2RGrN856Xubglz2hac', // FCM server key obtained from Firebase console
+    };
+    print("FCM TOKEN: $fcmToken");
+
+    final payload = {
+      'notification': {
+        'title': title,
+        'body': body,
+      },
+      'priority': 'high',
+      'to': fcmToken,
+    };
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode == 200) {
+      print('Notification sent successfully');
+    } else {
+      print('Failed to send notification. Status code: ${response.statusCode}');
     }
   }
 

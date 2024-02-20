@@ -52,6 +52,7 @@ class ChatItem extends StatelessWidget {
   final String peerAvatar;
   final String peerName;
   final String lastMessage;
+  final String peerFCMToken;
   final String timestamp;
 
   ChatItem({
@@ -59,6 +60,7 @@ class ChatItem extends StatelessWidget {
     required this.peerAvatar,
     required this.peerName,
     required this.lastMessage,
+    required this.peerFCMToken,
     required this.timestamp,
   });
 
@@ -72,6 +74,7 @@ class ChatItem extends StatelessWidget {
             builder: (context) => ChatPage(
               arguments: ChatPageArguments(
                 peerId: peerId,
+                peerFCMToken: peerFCMToken,
                 peerAvatar: peerAvatar,
                 peerName: peerName,
               ),

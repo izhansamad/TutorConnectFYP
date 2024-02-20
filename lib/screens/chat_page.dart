@@ -27,6 +27,8 @@ class ChatPageState extends State<ChatPage> {
   bool isTeacher = false;
   var data;
   String previousSenderId = "";
+  Teacher? teacherData;
+  Student? studentData;
 
   final TextEditingController textEditingController = TextEditingController();
   final ScrollController listScrollController = ScrollController();
@@ -42,7 +44,24 @@ class ChatPageState extends State<ChatPage> {
   void initState() {
     isTeacher = PrefsManager().getBool('isTeacher');
     currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    getPeerData();
+
     super.initState();
+  }
+
+  void getPeerData() async {
+    if (isTeacher) {
+      final studentDataProvider = context.read<StudentDataProvider>();
+      studentData =
+          await studentDataProvider.getStudentById(widget.arguments.peerId);
+      print("student fcm: ${studentData!.fcmToken}");
+    } else {
+      final teachersDataProvider =
+          Provider.of<AllTeachersDataProvider>(context, listen: false);
+      teacherData =
+          await teachersDataProvider.getTeacherById(widget.arguments.peerId);
+      print("teacher fcm: ${teacherData!.fcmToken}");
+    }
   }
 
   void onSendMessage(String content) {
@@ -52,6 +71,8 @@ class ChatPageState extends State<ChatPage> {
         chatProvider.sendMessage(
           content: content,
           studentId: widget.arguments.peerId,
+          fcmTokenStudent: studentData!.fcmToken,
+          fcmTokenTeacher: teacherProvider.teacherData?.fcmToken ?? "",
           teacherId: currentUserId,
           studentName: widget.arguments.peerName,
           teacherName: FirebaseAuth.instance.currentUser!.displayName ?? "",
@@ -63,6 +84,8 @@ class ChatPageState extends State<ChatPage> {
             content: content,
             studentId: currentUserId,
             teacherId: widget.arguments.peerId,
+            fcmTokenStudent: studentProvider.studentData?.fcmToken ?? "",
+            fcmTokenTeacher: teacherData!.fcmToken,
             studentName: FirebaseAuth.instance.currentUser!.displayName ?? "",
             teacherName: widget.arguments.peerName,
             teacherImage: widget.arguments.peerAvatar,
@@ -302,7 +325,11 @@ class ChatPageArguments {
   final String peerId;
   final String peerAvatar;
   final String peerName;
+  final String peerFCMToken;
 
   ChatPageArguments(
-      {required this.peerId, required this.peerAvatar, required this.peerName});
+      {required this.peerId,
+      required this.peerAvatar,
+      required this.peerName,
+      required this.peerFCMToken});
 }

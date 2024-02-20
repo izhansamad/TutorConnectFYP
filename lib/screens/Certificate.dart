@@ -105,7 +105,7 @@ class Certificate extends StatelessWidget {
     );
 
     final output = await getTemporaryDirectory();
-    final file = File("${output.path}/certificate.pdf");
+    final file = File("${output.path}/certificate-${coursename}.pdf");
     await file.writeAsBytes(await pdf.save());
 
     // Open the PDF file using the platform-specific file opening mechanism

@@ -60,22 +60,26 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.school, size: 60, color: Colors.black),
-                SizedBox(height: 25),
-                Text(
-                  "Tutor Connect",
-                  style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black),
-                ),
-                Text(
-                  "Education, Simplified",
-                  style: TextStyle(
-                    color: Colors.blueGrey[700],
-                    fontSize: 14,
-                  ),
-                ),
+                // Icon(Icons.school, size: 60, color: Colors.black),
+                // SizedBox(height: 25),
+                // Text(
+                //   "Tutor Connect",
+                //   style: TextStyle(
+                //       fontSize: 28,
+                //       fontWeight: FontWeight.w700,
+                //       color: Colors.black),
+                // ),
+                // Text(
+                //   "Education, Simplified",
+                //   style: TextStyle(
+                //     color: Colors.blueGrey[700],
+                //     fontSize: 14,
+                //   ),
+                // ),
+                Image.asset(
+                  "assets/image/logo.png",
+                  width: 230,
+                )
               ],
             ),
           ),

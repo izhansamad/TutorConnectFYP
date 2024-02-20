@@ -51,18 +51,46 @@ class StudentDataProvider extends ChangeNotifier {
       throw error;
     }
   }
+
+  Future<Student?> getStudentById(String studentId) async {
+    try {
+      // Reference to the 'student' collection
+      CollectionReference studentsCollection =
+          FirebaseFirestore.instance.collection('student');
+
+      // Get the document snapshot corresponding to the provided student ID
+      DocumentSnapshot studentDocSnapshot =
+          await studentsCollection.doc(studentId).get();
+
+      // Check if the document exists
+      if (studentDocSnapshot.exists) {
+        // Create a Student object from the document snapshot data
+        Student student = Student.fromDocument(studentDocSnapshot);
+        return student;
+      } else {
+        // If the document does not exist, return null
+        return null;
+      }
+    } catch (error) {
+      // Handle any errors that occur during the Firestore query
+      print("Error fetching student by ID: $error");
+      throw error;
+    }
+  }
 }
 
 class Student {
   final String fullName;
   final String email;
   final String phone;
+  final String fcmToken;
   final String image;
 
   Student({
     required this.fullName,
     required this.email,
     required this.phone,
+    required this.fcmToken,
     required this.image,
   });
 
@@ -71,6 +99,7 @@ class Student {
         fullName: map['fullName'],
         email: map['email'],
         phone: map['phoneNumber'],
+        fcmToken: map['pushToken'] ?? "",
         image: map['image']);
   }
 
