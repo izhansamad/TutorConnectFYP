@@ -319,6 +319,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
     try {
       final teacherUid = FirebaseAuth.instance.currentUser!.uid;
+      final teacherName = FirebaseAuth.instance.currentUser!.displayName;
       final teacherCoursesCollection = FirebaseFirestore.instance
           .collection('courses')
           .doc(teacherUid)
@@ -340,6 +341,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           'courseFee': courseFee,
           'courseDuration': courseDuration,
           'teacherId': teacherUid,
+          'teacherName': teacherName,
           'customFields': customFields,
         });
       } else {
@@ -352,6 +354,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           'courseStatus': false,
           'courseImage': courseImage,
           'teacherId': teacherUid,
+          'teacherName': teacherName,
           'customFields': customFields,
         });
 

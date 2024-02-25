@@ -229,6 +229,18 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
               ),
             ElevatedButton(
               onPressed: () {
+                if (moduleNameController.text == "" ||
+                    moduleDescriptionController.text == "") {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("All fields are required!")));
+                  return;
+                }
+                if ((widget.module?.materials?.length ?? 0) == 0 &&
+                    selectedFiles.length == 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Cannot save a empty module")));
+                  return;
+                }
                 saveModule();
               },
               child: Text("Save Module"),

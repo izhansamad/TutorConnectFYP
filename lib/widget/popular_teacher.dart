@@ -45,6 +45,7 @@ class PopularTeacher extends StatelessWidget {
                   ),
                   SizedBox(
                     height: 3,
+                    width: 160,
                   ),
                   Text(
                     teacher.speciality,

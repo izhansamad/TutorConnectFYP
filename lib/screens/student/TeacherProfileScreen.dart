@@ -12,7 +12,6 @@ import '../../utils/Teacher.dart';
 import '../../widget/CourseBox.dart';
 import '../../widget/avatar_image.dart';
 import '../../widget/contact_box.dart';
-import '../../widget/mybutton.dart';
 import '../../widget/teacher_info_box.dart';
 import 'CourseDetailScreen.dart';
 
@@ -310,14 +309,14 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               ),
             ),
           if (courses != null) SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 15),
-            child: MyButton(
-                disableButton: false,
-                bgColor: primaryColor,
-                title: "Connect Tutor",
-                onTap: () {}),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(bottom: 15),
+          //   child: MyButton(
+          //       disableButton: false,
+          //       bgColor: primaryColor,
+          //       title: "Connect Tutor",
+          //       onTap: () {}),
+          // ),
         ],
       ),
     );
