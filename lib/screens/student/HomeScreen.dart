@@ -252,19 +252,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 12),
-                    Text(
-                      "Popular Courses",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                    ),
+                    if (enrolledCourses.length > 0) SizedBox(height: 12),
+                    if (enrolledCourses.length > 0)
+                      Text(
+                        "Enrolled Courses",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w700),
+                      ),
                     SizedBox(height: 10),
                     SingleChildScrollView(
                       padding: EdgeInsets.only(bottom: 5),
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          for (Course course in allCourses)
+                          for (Course course in enrolledCourses)
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
@@ -284,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(height: 12),
                     Text(
-                      "Enrolled Courses",
+                      "Popular Courses",
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                     ),
@@ -294,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       scrollDirection: Axis.vertical,
                       child: Column(
                         children: [
-                          for (Course course in enrolledCourses)
+                          for (Course course in allCourses)
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(

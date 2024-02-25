@@ -6,7 +6,6 @@ import 'package:tutor_connect_app/screens/SignUpScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherHome.dart';
 import 'package:tutor_connect_app/utils/PrefsManager.dart';
 import 'package:tutor_connect_app/widget/main_button.dart';
-import 'package:tutor_connect_app/widget/textField.dart';
 
 import '../core/colors.dart';
 import '../core/space.dart';
@@ -23,18 +22,18 @@ class LoginScreen extends StatefulWidget {
 bool isLoading = false;
 
 class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController userEmail = TextEditingController();
-  TextEditingController userPass = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          backgroundColor: Colors.grey.shade100,
-          body: Center(
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      body: Stack(
+        children: [
+          Center(
             child: Padding(
               padding: EdgeInsets.only(top: 10.0),
               child: SingleChildScrollView(
@@ -54,72 +53,107 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(color: Colors.grey.shade800),
                     ),
                     SpaceVH(height: 40.0),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          textField(
-                              controller: userEmail,
-                              hintTxt: 'Email',
-                              icon: Icons.email,
-                              validator: validateRequired),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0,
-                              vertical: 8.0,
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 8.0,
+                          ),
+                          child: Container(
+                            height: 60.0,
+                            padding: EdgeInsets.only(left: 20.0, right: 20),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(20.0),
                             ),
-                            child: Container(
-                              height: 60.0,
-                              padding: EdgeInsets.only(left: 20.0, right: 20),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(20.0),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: TextFormField(
-                                      autovalidateMode:
-                                          AutovalidateMode.onUserInteraction,
-                                      controller: userPass,
-                                      textAlignVertical:
-                                          TextAlignVertical.center,
-                                      obscureText: !isPasswordVisible,
-                                      validator: null,
-                                      decoration: InputDecoration(
-                                        helperText: ' ',
-                                        contentPadding:
-                                            EdgeInsets.only(bottom: 3),
-                                        border: InputBorder.none,
-                                        hintText: "Password",
-                                        hintStyle: hintStyle,
-                                      ),
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width - 105,
+                                  child: TextFormField(
+                                    controller: emailController,
+                                    textAlignVertical: TextAlignVertical.center,
+                                    validator: null,
+                                    decoration: InputDecoration(
+                                      helperText: ' ',
+                                      contentPadding:
+                                          EdgeInsets.only(bottom: 3),
+                                      border: InputBorder.none,
+                                      hintText: "Email",
+                                      hintStyle: hintStyle,
                                     ),
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500),
                                   ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        isPasswordVisible = !isPasswordVisible;
-                                      });
-                                    },
-                                    child: Icon(
-                                      isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                      color: primaryColor,
-                                    ),
-                                  )
-                                ],
-                              ),
+                                ),
+                                Icon(
+                                  Icons.email,
+                                  color: primaryColor,
+                                )
+                              ],
                             ),
-                          )
-                        ],
-                      ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                            vertical: 8.0,
+                          ),
+                          child: Container(
+                            height: 60.0,
+                            padding: EdgeInsets.only(left: 20.0, right: 20),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width - 105,
+                                  child: TextFormField(
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    controller: passwordController,
+                                    textAlignVertical: TextAlignVertical.center,
+                                    obscureText: !isPasswordVisible,
+                                    validator: null,
+                                    decoration: InputDecoration(
+                                      helperText: ' ',
+                                      contentPadding:
+                                          EdgeInsets.only(bottom: 3),
+                                      border: InputBorder.none,
+                                      hintText: "Password",
+                                      hintStyle: hintStyle,
+                                    ),
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      isPasswordVisible = !isPasswordVisible;
+                                    });
+                                  },
+                                  child: Icon(
+                                    isPasswordVisible
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                    color: primaryColor,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                     SpaceVH(height: 10.0),
                     Align(
@@ -145,8 +179,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           MainButton(
                             onTap: () async {
-                              if (_formKey.currentState!.validate()) {
+                              if (emailController.text != "" &&
+                                  passwordController.text != "") {
                                 await signIn();
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content:
+                                            Text("All Fields are required")));
                               }
                             },
                             text: 'Sign in',
@@ -188,16 +228,16 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-        ),
-        if (isLoading)
-          Container(
-            color: Colors.black
-                .withOpacity(0.5), // Add a semi-transparent overlay.
-            child: Center(
-              child: CircularProgressIndicator(),
+          if (isLoading)
+            Container(
+              color: Colors.black
+                  .withOpacity(0.5), // Add a semi-transparent overlay.
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -208,10 +248,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: userEmail.text,
-        password: userPass.text,
+        email: emailController.text,
+        password: passwordController.text,
       );
-      String userType = await getUserTypeFromFirestore(userEmail.text);
+      String userType = await getUserTypeFromFirestore(emailController.text);
       setState(() {
         isLoading = false;
       });
