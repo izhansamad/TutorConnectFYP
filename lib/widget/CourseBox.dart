@@ -176,21 +176,24 @@ class CourseBoxHomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 10, width: 170),
-                    Text(
-                      course.courseName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style:
-                          TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                    SizedBox(
+                      width: 180,
+                      child: Text(
+                        course.courseName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 2.0),
                       child: Text(
-                        "Sir ${course.teacherName}",
+                        "Mr ${course.teacherName}",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontSize: 15, color: Colors.grey.shade700),
+                            fontSize: 13, color: Colors.grey.shade700),
                       ),
                     ),
                     SizedBox(height: 3),

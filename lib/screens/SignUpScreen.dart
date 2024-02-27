@@ -70,24 +70,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: Column(
                         children: [
                           textField(
+                              context: context,
                               controller: fullNameController,
                               keyBordType: TextInputType.name,
                               hintTxt: 'Full Name',
                               icon: Icons.person,
                               validator: validateRequired),
                           textField(
+                              context: context,
                               controller: emailController,
                               keyBordType: TextInputType.emailAddress,
                               hintTxt: 'Email Address',
                               icon: Icons.email,
                               validator: validateRequired),
                           textField(
+                              context: context,
                               controller: phoneController,
                               keyBordType: TextInputType.phone,
                               hintTxt: 'Phone Number',
                               icon: Icons.phone,
                               validator: validateRequired),
                           textField(
+                              context: context,
                               controller: passController,
                               isObs: true,
                               hintTxt: 'Password',
@@ -96,6 +100,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           Visibility(
                             visible: isTeacher,
                             child: textField(
+                                context: context,
                                 controller: qualificationController,
                                 icon: Icons.school,
                                 hintTxt: 'Qualification',
@@ -104,6 +109,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           Visibility(
                             visible: isTeacher,
                             child: textField(
+                                context: context,
                                 controller: experienceController,
                                 icon: CupertinoIcons.star_circle_fill,
                                 hintTxt: 'Experience',
@@ -112,6 +118,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           Visibility(
                             visible: isTeacher,
                             child: textField(
+                                context: context,
                                 controller: specialityController,
                                 icon: CupertinoIcons.book_fill,
                                 hintTxt: 'Teaching Speciality',
@@ -120,6 +127,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           Visibility(
                             visible: isTeacher,
                             child: textField(
+                                context: context,
                                 controller: aboutController,
                                 icon: CupertinoIcons.info_circle_fill,
                                 hintTxt: 'About',
@@ -134,15 +142,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Expanded(
-                                        child: textField(
-                                          controller:
-                                              customFieldHeadingControllers[i],
-                                          icon: Icons.text_fields,
-                                          hintTxt:
-                                              'Custom Field Heading ${i + 1}',
-                                          validator: validateRequired,
-                                        ),
+                                      textField(
+                                        isCustomField: true,
+                                        context: context,
+                                        controller:
+                                            customFieldHeadingControllers[i],
+                                        icon: Icons.text_fields,
+                                        hintTxt:
+                                            'Custom Field Heading ${i + 1}',
+                                        validator: validateRequired,
                                       ),
                                       IconButton(
                                         padding: EdgeInsets.only(right: 8),
@@ -159,6 +167,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     ],
                                   ),
                                   textField(
+                                    context: context,
                                     controller: customFieldValueControllers[i],
                                     icon: Icons.abc,
                                     hintTxt: 'Custom Field Value ${i + 1}',

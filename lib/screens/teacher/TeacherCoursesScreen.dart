@@ -101,20 +101,20 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
                     child: ListView.builder(
                         itemCount: courses.length,
                         itemBuilder: (BuildContext context, int index) {
-                          if (courses[index].courseStatus || isTeacher) {
-                            return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (builder) =>
-                                              CourseDetailScreen(
-                                                  course: courses[index])));
-                                },
-                                child: CourseBox(course: courses[index]));
-                          } else {
-                            return null;
-                          }
+                          // if (courses[index].courseStatus || isTeacher) {
+                          return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (builder) =>
+                                            CourseDetailScreen(
+                                                course: courses[index])));
+                              },
+                              child: CourseBox(course: courses[index]));
+                          // } else {
+                          //   return null;
+                          // }
                         }),
                   ),
           ],

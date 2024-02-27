@@ -626,6 +626,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         await enrollmentCollection.add({
           'studentId': studentId,
           'courseId': courseId,
+          'completedModules': [],
           'enrollmentDate': FieldValue.serverTimestamp(),
         });
         isEnrolled = true;

@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:tutor_connect_app/screens/teacher/AddQuizScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherEditProfileScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherHome.dart';
 
@@ -32,6 +31,7 @@ class CustomFile {
 class _AddModulesScreenState extends State<AddModulesScreen> {
   List<CustomFile> selectedFiles = [];
   List<String> deletedMaterial = [];
+  bool loading = false;
 
   TextEditingController moduleNameController = TextEditingController();
   TextEditingController moduleDescriptionController = TextEditingController();
@@ -84,182 +84,195 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
                 icon: Icon(Icons.delete))
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            textField(
-              controller: moduleNameController,
-              hintTxt: "Module Name",
-              validator: validateRequired,
-            ),
-            textField(
-              controller: moduleDescriptionController,
-              hintTxt: "Module Description",
-              validator: validateRequired,
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Text("Add Materials",
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-              ),
-            ),
-            textField(
-              controller: materialNameController,
-              hintTxt: "Material Name",
-              validator: validateRequired,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
               children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    await pickAndUploadFile('video');
-                  },
-                  child: Text("Add Video"),
+                textField(
+                  controller: moduleNameController,
+                  hintTxt: "Module Name",
+                  validator: validateRequired,
                 ),
-                SizedBox(width: 15),
-                ElevatedButton(
-                  onPressed: () async {
-                    await pickAndUploadFile('pdf');
-                  },
-                  child: Text("Add PDF"),
+                textField(
+                  controller: moduleDescriptionController,
+                  hintTxt: "Module Description",
+                  validator: validateRequired,
                 ),
-              ],
-            ),
-            if (widget.module?.materials?.isNotEmpty ?? false)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18.0, vertical: 10),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Text("Existing Materials",
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w700)),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 18.0, vertical: 10),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text("Add Materials",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w700)),
                   ),
-                  for (CourseMaterial material
-                      in widget.module?.materials ?? [])
-                    ListTile(
-                      leading: material.materialType == "pdf"
-                          ? Icon(Icons.picture_as_pdf)
-                          : Icon(Icons.video_camera_back),
-                      title: Text(material.materialName),
-                      trailing: IconButton(
-                        icon: Icon(Icons.close),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Are you sure'),
-                                content:
-                                    Text('You want to delete this material?'),
-                                actions: <Widget>[
-                                  TextButton(
-                                    child: Text('Cancel'),
-                                    onPressed: () {
-                                      Navigator.of(context)
-                                          .pop(); // Close the dialog
-                                    },
-                                  ),
-                                  TextButton(
-                                    child: Text('Delete'),
-                                    onPressed: () {
-                                      deletedMaterial.add(material.materialUrl);
-                                      widget.module?.materials?.removeWhere(
-                                        (item) =>
-                                            item.materialUrl ==
-                                            material.materialUrl,
-                                      );
-                                      setState(() {});
-                                      Navigator.of(context)
-                                          .pop(); // Close the dialog
-                                    },
-                                  ),
-                                ],
+                ),
+                textField(
+                  controller: materialNameController,
+                  hintTxt: "Material Name",
+                  validator: validateRequired,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        await pickAndUploadFile('video');
+                      },
+                      child: Text("Add Video"),
+                    ),
+                    SizedBox(width: 15),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await pickAndUploadFile('pdf');
+                      },
+                      child: Text("Add PDF"),
+                    ),
+                  ],
+                ),
+                if (widget.module?.materials?.isNotEmpty ?? false)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18.0, vertical: 10),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Text("Existing Materials",
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                      for (CourseMaterial material
+                          in widget.module?.materials ?? [])
+                        ListTile(
+                          leading: material.materialType == "pdf"
+                              ? Icon(Icons.picture_as_pdf)
+                              : Icon(Icons.video_camera_back),
+                          title: Text(material.materialName),
+                          trailing: IconButton(
+                            icon: Icon(Icons.close),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Are you sure'),
+                                    content: Text(
+                                        'You want to delete this material?'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: Text('Cancel'),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // Close the dialog
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: Text('Delete'),
+                                        onPressed: () {
+                                          deletedMaterial
+                                              .add(material.materialUrl);
+                                          widget.module?.materials?.removeWhere(
+                                            (item) =>
+                                                item.materialUrl ==
+                                                material.materialUrl,
+                                          );
+                                          setState(() {});
+                                          Navigator.of(context)
+                                              .pop(); // Close the dialog
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
                               );
                             },
+                          ),
+                        ),
+                    ],
+                  ),
+                if (selectedFiles.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18.0, vertical: 10),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Text("Selected Materials",
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: selectedFiles.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            leading: selectedFiles[index].type == "pdf"
+                                ? Icon(Icons.picture_as_pdf)
+                                : Icon(Icons.video_camera_back),
+                            title: Text(selectedFiles[index].name),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () {
+                                selectedFiles.removeAt(index);
+                                setState(() {});
+                              },
+                            ),
                           );
                         },
                       ),
-                    ),
-                ],
-              ),
-            if (selectedFiles.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18.0, vertical: 10),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Text("Selected Materials",
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w700)),
-                    ),
+                    ],
                   ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: selectedFiles.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: selectedFiles[index].type == "pdf"
-                            ? Icon(Icons.picture_as_pdf)
-                            : Icon(Icons.video_camera_back),
-                        title: Text(selectedFiles[index].name),
-                        trailing: IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            selectedFiles.removeAt(index);
-                            setState(() {});
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ElevatedButton(
-              onPressed: () {
-                if (moduleNameController.text == "" ||
-                    moduleDescriptionController.text == "") {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("All fields are required!")));
-                  return;
-                }
-                if ((widget.module?.materials?.length ?? 0) == 0 &&
-                    selectedFiles.length == 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Cannot save a empty module")));
-                  return;
-                }
-                saveModule();
-              },
-              child: Text("Save Module"),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: ElevatedButton(
+                ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (builder) => AddQuizScreen(
-                                courseId: widget.course.courseId,
-                                moduleId: widget.module!.moduleId ?? "")));
+                    if (moduleNameController.text == "" ||
+                        moduleDescriptionController.text == "") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("All fields are required!")));
+                      return;
+                    }
+                    if ((widget.module?.materials?.length ?? 0) == 0 &&
+                        selectedFiles.length == 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("Cannot save a empty module")));
+                      return;
+                    }
+                    saveModule();
                   },
-                  child: Text("Add Quiz")),
-            )
-          ],
-        ),
+                  child: Text("Save Module"),
+                ),
+                // Align(
+                //   alignment: Alignment.bottomCenter,
+                //   child: ElevatedButton(
+                //       onPressed: () {
+                //         Navigator.push(
+                //             context,
+                //             MaterialPageRoute(
+                //                 builder: (builder) => AddQuizScreen(
+                //                     courseId: widget.course.courseId,
+                //                     moduleId: widget.module!.moduleId ?? "")));
+                //       },
+                //       child: Text("Add Quiz")),
+                // )
+              ],
+            ),
+          ),
+          if (loading)
+            Container(
+              color: Colors.black
+                  .withOpacity(0.5), // Add a semi-transparent overlay.
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -270,6 +283,9 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
           .showSnackBar(SnackBar(content: Text("Enter Material Name")));
       return;
     }
+    setState(() {
+      loading = true;
+    });
     FilePickerResult? result;
     if (fileType == 'video') {
       result = await FilePicker.platform.pickFiles(type: FileType.video);
@@ -277,6 +293,9 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
       result = await FilePicker.platform
           .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
     }
+    setState(() {
+      loading = false;
+    });
 
     if (result != null) {
       selectedFiles.add(CustomFile(
@@ -290,6 +309,9 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
   }
 
   void saveModule() async {
+    setState(() {
+      loading = true;
+    });
     List<CourseMaterial> materials = await uploadFilesToFirebaseStorage();
 
     // Create a new module with the uploaded materials
@@ -307,6 +329,7 @@ class _AddModulesScreenState extends State<AddModulesScreen> {
     }
     setState(() {
       selectedFiles = [];
+      loading = false;
     });
     moveToHome();
 
