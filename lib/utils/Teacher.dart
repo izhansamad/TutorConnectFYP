@@ -81,11 +81,11 @@ class AllTeachersDataProvider extends ChangeNotifier {
     try {
       // Reference to the 'teacher' collection
       CollectionReference teachersCollection =
-      FirebaseFirestore.instance.collection('teacher');
+          FirebaseFirestore.instance.collection('teacher');
 
       // Get the document snapshot corresponding to the provided teacher ID
       DocumentSnapshot teacherDocSnapshot =
-      await teachersCollection.doc(teacherId).get();
+          await teachersCollection.doc(teacherId).get();
 
       // Check if the document exists
       if (teacherDocSnapshot.exists) {
@@ -137,21 +137,26 @@ class Teacher {
   final String rating;
   final String fcmToken;
   final String? image;
+  final String availabilityFrom;
+  final String availabilityTo;
   List<Map<String, dynamic>>? customFields;
 
-  Teacher(
-      {required this.id,
-      required this.fullName,
-      required this.email,
-      required this.phone,
-      required this.about,
-      required this.experience,
-      required this.speciality,
-      required this.qualification,
-      required this.rating,
-      required this.image,
-      required this.fcmToken,
-      this.customFields});
+  Teacher({
+    required this.id,
+    required this.fullName,
+    required this.email,
+    required this.phone,
+    required this.about,
+    required this.experience,
+    required this.speciality,
+    required this.qualification,
+    required this.rating,
+    required this.image,
+    required this.fcmToken,
+    required this.availabilityFrom,
+    required this.availabilityTo,
+    this.customFields,
+  });
 
   factory Teacher.fromMap(Map<String, dynamic> map) {
     return Teacher(
@@ -166,6 +171,8 @@ class Teacher {
       image: map['image'],
       rating: map['rating'],
       fcmToken: map['pushToken'] ?? "",
+      availabilityFrom: map['availabilityFrom'] ?? "TimeOfDay(08:00)",
+      availabilityTo: map['availabilityTo'] ?? "TimeOfDay(21:00)",
       customFields: List<Map<String, dynamic>>.from(map['customFields'] ?? []),
     );
   }

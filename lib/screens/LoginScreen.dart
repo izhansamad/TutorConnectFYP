@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:tutor_connect_app/screens/ForgetPasswordScreen.dart';
 import 'package:tutor_connect_app/screens/SignUpScreen.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherHome.dart';
 import 'package:tutor_connect_app/utils/PrefsManager.dart';
@@ -161,7 +162,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Padding(
                         padding: EdgeInsets.only(right: 20.0),
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (builder) =>
+                                        ForgetPasswordScreen()));
+                          },
                           child: Text(
                             'Forgot Password?',
                             style: TextStyle(

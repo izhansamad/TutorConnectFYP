@@ -1,14 +1,14 @@
-import 'package:badges/badges.dart';
-import 'package:badges/badges.dart' as badges;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:tutor_connect_app/screens/teacher/TeacherEditProfileScreen.dart';
 
 import '../../core/colors.dart';
 import '../../data/json.dart';
 import '../../utils/Teacher.dart';
+import '../../widget/AvailabilityDialog.dart';
 import '../../widget/avatar_image.dart';
 import '../../widget/mybutton.dart';
 import '../../widget/teacher_info_box.dart';
@@ -28,6 +28,39 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   @override
   void initState() {
     super.initState();
+  }
+
+  String _formatTime(String timeString) {
+    // Remove "TimeOfDay(" and ")"
+    timeString = timeString.replaceAll("TimeOfDay(", "").replaceAll(")", "");
+
+    // Split the string by ":"
+    List<String> parts = timeString.split(":");
+
+    // Parse the hour and minute
+    int hour = int.parse(parts[0]);
+    int minute = int.parse(parts[1]);
+
+    // Create a TimeOfDay object
+    TimeOfDay timeOfDay = TimeOfDay(hour: hour, minute: minute);
+
+    // Format the time to AM/PM format
+    final now = DateTime.now();
+    final dateTime = DateTime(
+        now.year, now.month, now.day, timeOfDay.hour, timeOfDay.minute);
+    return DateFormat.jm().format(dateTime); // Format time to AM/PM
+  }
+
+  TimeOfDay _convertToTimeOfDay(String timeString) {
+    timeString = timeString.replaceAll("TimeOfDay(", "").replaceAll(")", "");
+
+    // Split the string by ":"
+    List<String> parts = timeString.split(":");
+
+    // Parse the hour and minute
+    int hour = int.parse(parts[0]);
+    int minute = int.parse(parts[1]);
+    return TimeOfDay(hour: hour, minute: minute);
   }
 
   @override
@@ -91,9 +124,26 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text("Available hours 8:00am - 5:00pm",
-                              style:
-                                  TextStyle(fontSize: 14, color: Colors.green)),
+                          GestureDetector(
+                            onTap: () async {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AvailabilityDialog(
+                                    teacherId: teacherData.id,
+                                    initialFromTime: _convertToTimeOfDay(
+                                        teacherData.availabilityFrom),
+                                    initialToTime: _convertToTimeOfDay(
+                                        teacherData.availabilityTo),
+                                  );
+                                },
+                              );
+                            },
+                            child: Text(
+                                "Available hours ${_formatTime(teacherData.availabilityFrom)} - ${_formatTime(teacherData.availabilityTo)}",
+                                style: TextStyle(
+                                    fontSize: 14, color: Colors.green)),
+                          ),
                           SizedBox(
                             height: 25,
                           ),
