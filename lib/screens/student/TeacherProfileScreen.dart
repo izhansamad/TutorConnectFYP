@@ -2,6 +2,7 @@ import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:intl/intl.dart';
 import 'package:tutor_connect_app/screens/chat_page.dart';
 
 import '../../core/colors.dart';
@@ -28,6 +29,27 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   List<Map<String, dynamic>> customFields = [];
+
+  String _formatTime(String timeString) {
+    // Remove "TimeOfDay(" and ")"
+    timeString = timeString.replaceAll("TimeOfDay(", "").replaceAll(")", "");
+
+    // Split the string by ":"
+    List<String> parts = timeString.split(":");
+
+    // Parse the hour and minute
+    int hour = int.parse(parts[0]);
+    int minute = int.parse(parts[1]);
+
+    // Create a TimeOfDay object
+    TimeOfDay timeOfDay = TimeOfDay(hour: hour, minute: minute);
+
+    // Format the time to AM/PM format
+    final now = DateTime.now();
+    final dateTime = DateTime(
+        now.year, now.month, now.day, timeOfDay.hour, timeOfDay.minute);
+    return DateFormat.jm().format(dateTime); // Format time to AM/PM
+  }
 
   @override
   void initState() {
@@ -129,7 +151,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text("Available hours 8:00am - 5:00pm",
+          Text(
+              "Available hours ${_formatTime(teacher.availabilityFrom)} - ${_formatTime(teacher.availabilityTo)}",
               style: TextStyle(fontSize: 14, color: Colors.green)),
           SizedBox(
             height: 25,
